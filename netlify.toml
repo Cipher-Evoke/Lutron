@@ -1,0 +1,53 @@
+# Netlify config for Lutron frontend (CRA + CRACO)
+# Deploy via: Netlify Dashboard -> Add new site -> Import from Git.
+# IMPORTANT: in the Netlify UI leave "Base directory" EMPTY. This file is the
+# single source of truth (a UI base + a file base conflict breaks config parsing
+# with "Base directory does not exist"). If the UI already has build settings
+# filled in, clear them (or set them to exactly the values below).
+# REQUIRED env var in Netlify UI (Site settings -> Environment variables):
+#   REACT_APP_API_URL=https://<your-render-backend>.onrender.com
+#   (no trailing slash; must be set BEFORE build, then Trigger deploy -> Clear cache and deploy)
+
+[build]
+  # No `base` on purpose — repo root is the base; the command below builds
+  # inside lutron_frontend/ and `publish` is relative to the repo root.
+  publish = "lutron_frontend/build"
+  command = "npm --prefix lutron_frontend install --no-audit --no-fund && npm --prefix lutron_frontend run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--no-audit --no-fund"
+  # CRA bakes REACT_APP_* at build time. Fallback is only for preview builds
+  # without the env var set — set the real value in the Netlify UI.
+  REACT_APP_API_URL = "http://127.0.0.1:8000"
+  GENERATE_SOURCEMAP = "false"
+  DISABLE_ESLINT_PLUGIN = "true"
+  ESLINT_NO_DEV_ERRORS = "true"
+  CI = "false"
+
+# SPA fallback: React Router routes (e.g. /login, /dashboard) serve index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Security headers. CSP allows any https/wss backend (your Render URL) plus
+# local dev backends. Tighten connect-src to your exact Render domain once known.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "no-referrer"
+    Permissions-Policy = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+    X-Permitted-Cross-Domain-Policies = "none"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Resource-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "unsafe-none"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http://127.0.0.1:8000 http://localhost:8000; font-src 'self' data:; connect-src 'self' https: wss: http://127.0.0.1:8000 http://localhost:8000 ws://127.0.0.1:8000 ws://localhost:8000 ws://localhost:3000; worker-src 'self' blob:; frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'"
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

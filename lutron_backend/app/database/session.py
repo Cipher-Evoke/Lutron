@@ -14,7 +14,20 @@ try:
 except Exception:
     pass
 
-DATABASE_URL = os.getenv("DATABASE_HOST_URL")
+DATABASE_URL = os.getenv("DATABASE_HOST_URL") or os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError(
+        "Missing database URL. Set DATABASE_HOST_URL (or DATABASE_URL on Render) "
+        "to a postgresql:// URL."
+    )
+# Render / Heroku style URLs use postgres:// — SQLAlchemy needs postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+# SQLAlchemy 2.x maps bare postgresql:// to the psycopg (v3) driver, but this
+# project ships psycopg2-binary. Pin the driver explicitly so both local and
+# Render installs use psycopg2 regardless of SQLAlchemy version.
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
 
 
 def _env_int(name: str, default: int) -> int:

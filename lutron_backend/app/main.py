@@ -132,6 +132,22 @@ def _energy_logger_manual() -> bool:
     return is_energy_logger_manual()
 
 
+def _cloud_mode() -> bool:
+    """True on hosted PaaS (Render) where LAN hardware processes can't run.
+
+    Set LMS_CLOUD_MODE=1 on Render. Skips LEAP listener / energy-logger /
+    loadcontroller child processes (they need direct LAN access to Lutron
+    processors via zeroconf/sockets). API, scheduler, monitoring and
+    websockets keep running.
+    """
+    return (os.getenv("LMS_CLOUD_MODE") or "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
+
+
 # -------------------- Startup -------------------- #
 @app.on_event("startup")
 async def on_startup():
@@ -211,23 +227,27 @@ async def on_startup():
         print("[Startup] Manual energy logger: OFF (normal – area power from processor)")
 
     try:
-        _runtime_supervisor.start()
-        results = _runtime_supervisor.start_all()
-        labels = {
-            "listener": "Listener",
-            "energy_logger": "Energy logger",
-            "loadcontroller_listener": "LoadController listener",
-        }
-        for name, ok in results.items():
-            label = labels.get(name, name)
-            if ok:
-                print(f"[Startup] {label} process started")
-            else:
-                child = _runtime_supervisor.get_child(name)
-                err = child.status().error if child else "unknown"
-                print(f"[Startup] {label} process not started: {err}")
-        _runtime_supervisor.start_monitor()
-        print("[Startup] Runtime health monitor started")
+        if _cloud_mode():
+            print("[Startup] LMS_CLOUD_MODE=1 — skipping LAN hardware processes "
+                  "(listener / energy_logger / loadcontroller_listener)")
+        else:
+            _runtime_supervisor.start()
+            results = _runtime_supervisor.start_all()
+            labels = {
+                "listener": "Listener",
+                "energy_logger": "Energy logger",
+                "loadcontroller_listener": "LoadController listener",
+            }
+            for name, ok in results.items():
+                label = labels.get(name, name)
+                if ok:
+                    print(f"[Startup] {label} process started")
+                else:
+                    child = _runtime_supervisor.get_child(name)
+                    err = child.status().error if child else "unknown"
+                    print(f"[Startup] {label} process not started: {err}")
+            _runtime_supervisor.start_monitor()
+            print("[Startup] Runtime health monitor started")
     except Exception as e:
         print(f"[Runtime Supervisor Startup Error] {e}")
 
