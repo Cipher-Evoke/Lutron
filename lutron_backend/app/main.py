@@ -132,6 +132,52 @@ def _energy_logger_manual() -> bool:
     return is_energy_logger_manual()
 
 
+def _seed_initial_admin() -> None:
+    """Create the first Superadmin from env vars (free-tier friendly).
+
+    Render free services have no Shell, so set SEED_ADMIN_NAME /
+    SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD in the dashboard and redeploy once,
+    then DELETE SEED_ADMIN_PASSWORD. Only runs when no active user with that
+    name exists; never overwrites or duplicates.
+    """
+    name = (os.getenv("SEED_ADMIN_NAME") or "").strip()
+    email = (os.getenv("SEED_ADMIN_EMAIL") or "").strip()
+    password = os.getenv("SEED_ADMIN_PASSWORD") or ""
+    if not (name and email and password):
+        return
+    try:
+        from app.database.session import SessionLocal
+        from app.models.user_model import User
+        from app.core.security import get_password_hash
+
+        db = SessionLocal()
+        try:
+            exists = (
+                db.query(User)
+                .filter(User.name == name, User.is_active == True)  # noqa: E712
+                .first()
+            )
+            if exists:
+                print(f"[Startup] Seed admin skipped — active user '{name}' exists")
+                return
+            db.add(
+                User(
+                    name=name,
+                    email=email,
+                    hashed_password=get_password_hash(password),
+                    role="Superadmin",
+                    change_password=False,
+                    is_active=True,
+                )
+            )
+            db.commit()
+            print(f"[Startup] Seed admin created: '{name}' (remove SEED_ADMIN_PASSWORD now)")
+        finally:
+            db.close()
+    except Exception as e:
+        print(f"[Startup] Seed admin failed: {e}")
+
+
 def _cloud_mode() -> bool:
     """True on hosted PaaS (Render) where LAN hardware processes can't run.
 
@@ -173,6 +219,7 @@ async def on_startup():
     ensure_floor_sort_order_column(engine)
     load_theme_defaults()
     seed_variant_config_defaults()
+    _seed_initial_admin()
 
     if is_monitoring_environment_enabled():
         # LMS-003: refuse to serve ingest with a missing/leaked shared secret.
