@@ -1,0 +1,352 @@
+"""
+Dashboard home helpers: new functions only (no changes to existing code).
+Used by app/crud/dashboard_home.py for alerts top-5 and next schedule.
+"""
+from datetime import datetime, time, timezone, timedelta
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy.orm import Session
+
+from app.models.processor import Processor
+from app.models.drivers import Driver
+from app.models.area import Area
+from app.models.floor_proc_mapping import FloorProcMapping
+from app.models.sensors_and_modules import SensorAndModule
+from app.models.alert_type_display_settings import AlertTypeDisplaySetting
+from app.utils.json_connection import connect_to_processor, send_json, recv_json
+from app.utils.alert_area_path import AreaPathResolver, sanitize_stored_path, area_alert_scope
+from app.crud.schedule import fetch_combined_schedules
+from app.crud.alert_reconciliation import (
+    active_device_filter_clauses,
+    active_driver_filter_clauses,
+    active_processor_filter_clauses,
+    heal_active_driver_alerts_for_read,
+    heal_unmapped_active_device_areas,
+    partition_active_driver_alert_duplicates,
+)
+from app.utils.alert_list_dedupe import dedupe_active_alert_dicts
+
+
+def _format_datetime_to_ist(dt: Optional[datetime]) -> Optional[str]:
+    """Convert UTC datetime to IST (UTC+5:30) and format as string."""
+    if dt is None:
+        return None
+    ist_tz = timezone(timedelta(hours=5, minutes=30))
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(ist_tz).strftime("%d-%m-%Y %H.%M")
+
+
+_DEFAULT_ALERT_TYPE_DISPLAY = {
+    "Processor Not Responding": True,
+    "Device Not Responding": True,
+    "Ballast Failure": True,
+    "Lamp Failure": True,
+    "Other Warnings": True,
+}
+
+
+def _get_alert_type_display_map(db: Session) -> Dict[str, bool]:
+    """Global alert visibility per alert type."""
+    type_map: Dict[str, bool] = dict(_DEFAULT_ALERT_TYPE_DISPLAY)
+    rows = db.query(AlertTypeDisplaySetting).all()
+    for r in rows:
+        type_map[r.alert_type] = bool(r.display)
+    return type_map
+
+
+def _get_area_full_path_from_processor(
+    ip: str, mac: str, system: str, area_code: str
+) -> Optional[str]:
+    """Resolve full area path from processor via LEAP traversal."""
+    if not area_code:
+        return None
+    sock = None
+    try:
+        sock = connect_to_processor(ip=ip, mac=mac, system=system, processor_ipv4=ip)
+        if not sock:
+            return None
+        path_parts = []
+        current_href = f"/area/{area_code}"
+        while current_href:
+            send_json(sock, {"CommuniqueType": "ReadRequest", "Header": {"Url": current_href}})
+            resp = recv_json(sock)
+            area = resp.get("Body", {}).get("Area")
+            if not area:
+                break
+            name = area.get("Name")
+            if name:
+                path_parts.insert(0, name)
+            parent_href = area.get("Parent", {}).get("href")
+            current_href = parent_href if parent_href else None
+        return "/".join(path_parts)
+    except Exception:
+        return None
+    finally:
+        if sock:
+            try:
+                sock.close()
+            except Exception:
+                pass
+
+
+def get_active_alerts_list_for_dashboard(
+    db: Session, current_user: Any
+) -> List[Dict[str, Any]]:
+    """
+    Build list of active alert dicts for dashboard (same structure as GET /alert/active_alerts).
+    Returns all alerts; dashboard crud slices to top 5.
+    """
+    results = []
+    allowed_floor_ids = []
+    if getattr(current_user, "role", None) == "Operator":
+        allowed_floor_ids = [
+            p.floor_id for p in getattr(current_user, "user_permissions", [])
+            if getattr(p, "floor_id", None) is not None
+        ]
+
+    type_display_map = _get_alert_type_display_map(db)
+    path_resolver = AreaPathResolver(db)
+
+    # Processor Alerts
+    if type_display_map.get("Processor Not Responding", True):
+        q_processors = db.query(Processor).filter(
+            *active_processor_filter_clauses(),
+        )
+        if getattr(current_user, "role", None) == "Operator":
+            q_processors = q_processors.join(
+                FloorProcMapping, FloorProcMapping.processor_id == Processor.id
+            ).filter(FloorProcMapping.floor_id.in_(allowed_floor_ids))
+        for p in q_processors.all():
+            location = None
+            if p.associated_area:
+                area_code = (
+                    p.associated_area.split("/")[-1]
+                    if "/" in p.associated_area
+                    else p.associated_area
+                )
+                area = db.query(Area).filter(
+                    Area.code == area_code, Area.processor_id == p.id
+                ).first()
+                scope = area_alert_scope(area, area_code=area_code)
+                location = path_resolver.resolve(
+                    area, None, area_code=scope["area_code"]
+                )
+                if not location:
+                    location = sanitize_stored_path(
+                        _get_area_full_path_from_processor(
+                            p.ipv4, p.mac, p.system, area_code
+                        )
+                    )
+            else:
+                scope = area_alert_scope(None)
+            results.append({
+                "location": location,
+                **scope,
+                "alert_type": "processor not responding",
+                "device_name": p.system,
+                "serial_no": p.serial,
+                "model_number": p.model_number,
+                "description": "not pingable",
+                "time": _format_datetime_to_ist(p.created_at),
+                "reported_time": _format_datetime_to_ist(p.reported_time),
+                "solved_time": _format_datetime_to_ist(p.solved_time),
+                "last_updated_time": _format_datetime_to_ist(p.created_at),
+            })
+
+    # Device Alerts
+    if type_display_map.get("Device Not Responding", True):
+        from app.utils.system_identity import (
+            partition_active_device_alert_duplicates,
+            processor_system_key_map,
+        )
+
+        try:
+            if heal_unmapped_active_device_areas(db):
+                db.commit()
+        except Exception:
+            db.rollback()
+
+        bad_devices = db.query(SensorAndModule).filter(
+            *active_device_filter_clauses(),
+        ).all()
+        survivors, _losers = partition_active_device_alert_duplicates(
+            bad_devices, processor_system_key_map(db)
+        )
+        for dev in survivors:
+            area = path_resolver.get_area(dev.area_id) if dev.area_id else None
+            if area is None and getattr(dev, "area_code", None):
+                area = path_resolver.get_area_by_code(
+                    dev.area_code, getattr(dev, "processor_id", None)
+                )
+            if area and getattr(current_user, "role", None) == "Operator" and area.floor_id not in allowed_floor_ids:
+                continue
+            scope = area_alert_scope(
+                area, area_id=dev.area_id, area_code=dev.area_code
+            )
+            location = path_resolver.resolve(
+                area, getattr(dev, "area_path", None), area_code=scope["area_code"]
+            )
+            results.append({
+                "location": location,
+                **scope,
+                "alert_type": "Device Not Responding",
+                "device_name": dev.device_name,
+                "serial_no": dev.serial_number,
+                "model_number": dev.device_model,
+                "description": "",
+                "time": _format_datetime_to_ist(dev.created_at),
+                "reported_time": _format_datetime_to_ist(dev.reported_time),
+                "solved_time": _format_datetime_to_ist(dev.solved_time),
+                "last_updated_time": _format_datetime_to_ist(dev.created_at),
+            })
+
+    # Driver Alerts
+    driver_types = {"E2": "Ballast Failure", "FC": "Lamp Failure"}
+    from app.utils.system_identity import processor_system_key_map
+
+    try:
+        if heal_active_driver_alerts_for_read(db):
+            db.commit()
+    except Exception:
+        db.rollback()
+
+    drivers = db.query(Driver).filter(
+        *active_driver_filter_clauses(require_area=False),
+    ).all()
+    driver_survivors, _driver_losers = partition_active_driver_alert_duplicates(
+        drivers, processor_system_key_map(db)
+    )
+    for d in driver_survivors:
+        area = path_resolver.get_area(d.area_id) if d.area_id else None
+        if area is None and getattr(d, "area_code", None):
+            area = path_resolver.get_area_by_code(
+                d.area_code, getattr(d, "processor_id", None)
+            )
+        if area and getattr(current_user, "role", None) == "Operator" and area.floor_id not in allowed_floor_ids:
+            continue
+        alert_type = driver_types.get(d.error_code, "Other Warnings")
+        if not type_display_map.get(alert_type, True):
+            continue
+        scope = area_alert_scope(area, area_id=d.area_id, area_code=d.area_code)
+        location = path_resolver.resolve(
+            area, getattr(d, "area_path", None), area_code=scope["area_code"]
+        )
+        results.append({
+            "location": location,
+            **scope,
+            "alert_type": alert_type,
+            "device_name": d.device_name,
+            "serial_no": None,
+            "model_number": None,
+            "description": d.description or "",
+            "loadcontroller_code": d.loadcontroller_code,
+            "time": _format_datetime_to_ist(d.created_at),
+            "reported_time": _format_datetime_to_ist(d.reported_time),
+            "solved_time": _format_datetime_to_ist(d.solved_time),
+            "last_updated_time": _format_datetime_to_ist(d.created_at),
+        })
+
+    return dedupe_active_alert_dicts(results)
+
+
+def _parse_time_of_day(time_dict: Optional[Dict]) -> Optional[time]:
+    """Parse time_of_day dict; supports Hour/Minute/Second and hour/minute/second."""
+    if not time_dict or not isinstance(time_dict, dict):
+        return None
+    h = time_dict.get("hour") if "hour" in time_dict else time_dict.get("Hour", 0)
+    m = time_dict.get("minute") if "minute" in time_dict else time_dict.get("Minute", 0)
+    s = time_dict.get("second") if "second" in time_dict else time_dict.get("Second", 0)
+    try:
+        return time(hour=int(h), minute=int(m), second=int(s or 0))
+    except (TypeError, ValueError):
+        return None
+
+
+def get_next_schedule_occurrence(
+    db: Session, current_user: Any = None
+) -> Optional[Dict[str, str]]:
+    """
+    Get the next upcoming schedule run from combined schedules (uses existing fetch_combined_schedules).
+    Returns {"name": str, "time": "12:00 pm", "date": "Aug 31"} or None.
+    """
+    result = fetch_combined_schedules(db)
+    if result.get("status") != "success":
+        return None
+
+    internal = result.get("internal_schedules", [])
+    preconfigured = result.get("preconfigured_schedules", [])
+    tz_ist = timedelta(hours=5, minutes=30)
+    now = datetime.utcnow() + tz_ist
+    candidates = []
+    day_name_to_weekday = {
+        "Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3,
+        "Friday": 4, "Saturday": 5, "Sunday": 6,
+    }
+
+    def add_candidate(next_dt: datetime, name: str):
+        if next_dt and next_dt > now:
+            candidates.append((next_dt, name))
+
+    for s in internal:
+        if s.get("EnableState") != "Enabled":
+            continue
+        name = s.get("name") or "Schedule"
+        tod = _parse_time_of_day(s.get("time_of_day"))
+        if not tod:
+            continue
+        if s.get("schedule_type") == "DayOfWeek" and s.get("days"):
+            active_days = [
+                day_name_to_weekday[d]
+                for d, active in s["days"].items()
+                if active and d in day_name_to_weekday
+            ]
+            for day_offset in range(8):
+                d = now.date() + timedelta(days=day_offset)
+                if d.weekday() in active_days:
+                    run = datetime(d.year, d.month, d.day, tod.hour, tod.minute, tod.second)
+                    if run > now:
+                        add_candidate(run, name)
+                        break
+        elif s.get("schedule_type") == "SpecificDates" and s.get("specific_dates"):
+            for entry in s["specific_dates"]:
+                try:
+                    y = entry.get("year") or entry.get("Year")
+                    m = entry.get("month") or entry.get("Month")
+                    day = entry.get("day") or entry.get("Day")
+                    run = datetime(y, m, day, tod.hour, tod.minute, tod.second)
+                    add_candidate(run, name)
+                except (TypeError, ValueError, KeyError):
+                    continue
+
+    for s in preconfigured:
+        if s.get("EnableState") != "Enabled":
+            continue
+        name = s.get("name") or "Schedule"
+        tod = _parse_time_of_day(s.get("time_of_day"))
+        if not tod:
+            continue
+        days = s.get("days") or {}
+        active_days = [
+            day_name_to_weekday[d]
+            for d, active in days.items()
+            if active and d in day_name_to_weekday
+        ]
+        if active_days:
+            for day_offset in range(8):
+                d = now.date() + timedelta(days=day_offset)
+                if d.weekday() in active_days:
+                    run = datetime(d.year, d.month, d.day, tod.hour, tod.minute, tod.second)
+                    if run > now:
+                        add_candidate(run, name)
+                        break
+
+    if not candidates:
+        return None
+    candidates.sort(key=lambda x: x[0])
+    next_dt, name = candidates[0]
+    hour12 = next_dt.hour % 12 or 12
+    am_pm = "am" if next_dt.hour < 12 else "pm"
+    time_str = f"{hour12}:{next_dt.minute:02d} {am_pm}"
+    date_str = next_dt.strftime("%b %d")
+    return {"name": name, "time": time_str, "date": date_str}

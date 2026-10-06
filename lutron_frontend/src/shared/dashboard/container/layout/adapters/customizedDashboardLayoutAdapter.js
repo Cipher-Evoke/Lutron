@@ -1,0 +1,38 @@
+import { DASHBOARD_SECTION_IDS, DASHBOARD_TAB_IDS } from '../layoutTypes';
+
+export const CUSTOMIZED_DASHBOARD_TAB_ORDER_WITH_OVERVIEW = [
+  DASHBOARD_SECTION_IDS.OVERVIEW,
+  DASHBOARD_SECTION_IDS.ENERGY,
+  DASHBOARD_TAB_IDS.SPACE_UTILIZATION,
+  DASHBOARD_SECTION_IDS.ALERTS,
+];
+
+export const CUSTOMIZED_DASHBOARD_TAB_ORDER = [
+  DASHBOARD_SECTION_IDS.ENERGY,
+  DASHBOARD_TAB_IDS.SPACE_UTILIZATION,
+  DASHBOARD_SECTION_IDS.ALERTS,
+];
+
+export const CUSTOMIZED_DASHBOARD_LAYOUT_ADAPTER = {
+  variant: 'customized',
+  TAB_ORDER: CUSTOMIZED_DASHBOARD_TAB_ORDER_WITH_OVERVIEW,
+  resolveSectionKey(activeTab) {
+    if (activeTab === DASHBOARD_TAB_IDS.SPACE_UTILIZATION) {
+      return DASHBOARD_SECTION_IDS.CHARTS;
+    }
+    if (
+      activeTab === DASHBOARD_SECTION_IDS.OVERVIEW ||
+      activeTab === DASHBOARD_SECTION_IDS.ENERGY ||
+      activeTab === DASHBOARD_SECTION_IDS.ALERTS
+    ) {
+      return activeTab;
+    }
+    return null;
+  },
+};
+
+export function resolveCustomizedDashboardTabOrder(overviewEnabled) {
+  return overviewEnabled
+    ? CUSTOMIZED_DASHBOARD_TAB_ORDER_WITH_OVERVIEW
+    : CUSTOMIZED_DASHBOARD_TAB_ORDER;
+}

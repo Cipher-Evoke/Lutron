@@ -1,0 +1,3830 @@
+@import '../../shared/settings/home/homeQuillFontSize.css';
+
+/* Advanced Settings Home — font-size picker flush beside clear formatting. */
+.settings-main-inner-panel .settings-home-quill .ql-toolbar.ql-snow {
+  display: block !important;
+  box-sizing: border-box;
+}
+
+.settings-main-inner-panel .settings-home-quill .ql-toolbar.ql-snow .ql-formats {
+  display: inline-block !important;
+  vertical-align: middle;
+  margin-right: 10px;
+  margin-left: 0 !important;
+  float: none !important;
+}
+
+.settings-main-inner-panel .settings-home-quill .ql-toolbar.ql-snow .ql-picker.ql-size {
+  width: 58px;
+  vertical-align: middle;
+}
+
+.settings-main-inner-panel .settings-home-quill .ql-picker.ql-size .ql-picker-options {
+  width: 58px !important;
+  min-width: 58px !important;
+  max-width: 58px !important;
+  padding: 4px 0 !important;
+  box-sizing: border-box;
+}
+
+.settings-main-inner-panel .settings-home-quill .ql-picker.ql-size .ql-picker-item {
+  padding: 4px 8px !important;
+  text-align: center;
+}
+
+.settings-main-inner-panel .settings-home-quill .ql-picker.ql-size .ql-picker-item::before,
+.settings-main-inner-panel .settings-home-quill .ql-picker.ql-size .ql-picker-label::before {
+  text-align: center;
+}
+
+/* Let font-size menu extend outside short editors (Client / Project tabs). */
+.settings-main-inner-panel .settings-home-quill {
+  overflow: visible !important;
+  position: relative;
+  z-index: 1;
+}
+
+.settings-main-inner-panel .settings-home-quill .ql-toolbar.ql-snow,
+.settings-main-inner-panel .settings-home-quill .ql-toolbar.ql-snow .ql-picker,
+.settings-main-inner-panel .settings-home-quill .ql-toolbar.ql-snow .ql-picker.ql-expanded {
+  overflow: visible !important;
+}
+
+.settings-main-inner-panel .settings-home-quill .ql-picker.ql-size.ql-expanded {
+  z-index: 100;
+}
+
+.settings-main-inner-panel .settings-home-quill .ql-picker.ql-size .ql-picker-options {
+  z-index: 101;
+  max-height: 280px !important;
+  overflow-y: auto !important;
+}
+
+.settings-main-inner-panel .client-content-scrollable .settings-home-quill,
+.settings-main-inner-panel .project-content-scrollable .settings-home-quill,
+.settings-main-inner-panel .lutron-content-scrollable .settings-home-quill {
+  overflow: visible !important;
+}
+
+/* SweetAlert2 default z-index (~1060) sits below the app top bar (10002); keep alerts above chrome */
+.swal2-container {
+  z-index: 11000 !important;
+}
+
+/* Native date inputs — uppercase display + custom DD-MM-YYYY placeholder overlay */
+.native-date-input[type="date"]::-webkit-datetime-edit,
+.native-date-input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+.native-date-input[type="date"]::-webkit-datetime-edit-text {
+  text-transform: uppercase;
+}
+
+.native-date-input--empty[type="date"] {
+  color: transparent !important;
+}
+
+.native-date-input--empty[type="date"]::-webkit-datetime-edit,
+.native-date-input--empty[type="date"]::-webkit-datetime-edit-fields-wrapper,
+.native-date-input--empty[type="date"]::-webkit-datetime-edit-text,
+.native-date-input--empty[type="date"]::-webkit-datetime-edit-month-field,
+.native-date-input--empty[type="date"]::-webkit-datetime-edit-day-field,
+.native-date-input--empty[type="date"]::-webkit-datetime-edit-year-field {
+  opacity: 0;
+}
+
+.native-date-input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+
+.native-date-input-placeholder {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: rgba(28, 35, 48, 0.55);
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  user-select: none;
+  z-index: 1;
+}
+
+/* Sliding-pill tab strips (Dashboard / Heatmap / Settings Home).
+   Adds a subtle Lutron-style hover background on inactive tabs while keeping
+   the active tab clean (the white sliding pill behind it stays visible). */
+.nav-tab-btn {
+  transition: background-color 0.25s ease, color 0.8s ease !important;
+}
+.nav-tab-btn:hover:not(:disabled):not(.nav-tab-btn-active) {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+/* Contrast-safe labels: inactive must stay readable on themed pill tracks */
+.nav-tab-btn:not(.nav-tab-btn-active) {
+  color: var(--heatmap-tab-inactive-text, #ffffff) !important;
+}
+.nav-tab-btn.nav-tab-btn-active {
+  color: var(--heatmap-tab-active-text, #3d4a5c) !important;
+}
+
+/* Keyboard-nav tabs — suppress default browser/MUI focus ring (active pill shows selection) */
+.topbar-main-nav .topbar-nav-tab:focus,
+.topbar-main-nav .topbar-nav-tab:focus-visible,
+.nav-tab-btn:focus,
+.nav-tab-btn:focus-visible,
+.heatmap-mode-tab-btn:focus,
+.heatmap-mode-tab-btn:focus-visible,
+.settings-sidebar-nav-track [role="tab"]:focus,
+.settings-sidebar-nav-track [role="tab"]:focus-visible,
+.home-content-type-tabs [role="tab"]:focus,
+.home-content-type-tabs [role="tab"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Heatmap FOFP zone markers — suppress browser focus ring (black box on click) */
+.fofp-marker-interactive:focus,
+.fofp-marker-interactive:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Main top navbar — active tab: bold white text + dot; inactive: white text on dark bar */
+.topbar-main-nav .topbar-nav-tab[data-active="true"] {
+  color: var(--topbar-nav-inactive-text, #ffffff) !important;
+  font-weight: 600 !important;
+}
+.topbar-main-nav .topbar-nav-tab[data-active="false"] {
+  color: var(--topbar-nav-inactive-text, #ffffff) !important;
+}
+.topbar-main-nav .topbar-nav-tab[data-active="true"]::after {
+  background-color: var(--topbar-nav-inactive-text, #ffffff) !important;
+}
+.topbar-main-nav .topbar-nav-tab[data-active="false"]::after {
+  background-color: var(--topbar-nav-inactive-text, #ffffff) !important;
+}
+
+/* Super Admin profile menu (Reset Password / Logout) */
+.topbar-profile-menu,
+.topbar-profile-menu-root .MuiPaper-root {
+  background-color: var(--topbar-profile-menu-bg, #ffffff) !important;
+  color: var(--topbar-profile-menu-text, #1c2330) !important;
+  border-color: var(--topbar-profile-menu-border, #c5cdd8) !important;
+}
+.topbar-profile-menu .MuiMenuItem-root.topbar-profile-menu-item:hover,
+.topbar-profile-menu .MuiMenuItem-root.topbar-profile-menu-item.Mui-focusVisible,
+.topbar-profile-menu .MuiMenuItem-root.topbar-profile-menu-item.Mui-selected,
+.topbar-profile-menu-root .MuiMenuItem-root.topbar-profile-menu-item:hover,
+.topbar-profile-menu-root .MuiMenuItem-root.topbar-profile-menu-item.Mui-focusVisible {
+  background-color: var(--topbar-profile-menu-hover-bg, #d6dde8) !important;
+}
+
+/* Settings sidebar items (Home / Theme / Floor / Users / Alerts / Processors / etc.).
+   Active item: dark slate-blue pill matching the navbar.
+   Hover item: subtle slate-blue tint. Beats MUI sx via !important. */
+.settings-sidebar-item {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100%;
+  min-height: 36px;
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--settings-sidebar-font-family, inherit);
+  font-size: var(--settings-sidebar-font-size, 14px) !important;
+  font-weight: var(--settings-sidebar-font-weight, 500) !important;
+  font-style: var(--settings-sidebar-font-style, normal) !important;
+  line-height: var(--settings-sidebar-line-height, 20px) !important;
+  letter-spacing: var(--settings-sidebar-letter-spacing, normal) !important;
+  transition: background-color 0.25s ease, color 0.25s ease !important;
+}
+.settings-sidebar-item[data-active="true"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  font-weight: var(--settings-sidebar-active-font-weight, 500) !important;
+}
+.settings-sidebar-item:hover:not([data-active="true"]) {
+  background-color: rgba(61, 74, 92, 0.18) !important;
+  color: #ffffff !important;
+}
+
+/* Sliding active pill — row background stays transparent; pill layer moves behind items */
+.settings-sidebar-nav-track .settings-sidebar-item--pill[data-active="true"] {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+.settings-sidebar-active-pill {
+  background: var(--settings-sidebar-active-bg, #3d4a5c);
+  transition: top 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    left 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.25s ease;
+}
+html.gold-theme .settings-sidebar-nav-track .settings-sidebar-item--pill[data-active="true"] {
+  color: var(--settings-sidebar-active-text, #ffffff) !important;
+}
+html.theme-4-page .settings-sidebar-nav-track .settings-sidebar-item--pill[data-active="true"] {
+  color: var(--settings-sidebar-active-text, #ffffff) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-sidebar-active-pill {
+    transition: none !important;
+  }
+}
+
+/* Gold page-background theme: settings sidebar on mustard/gold shell */
+html.gold-theme .settings-sidebar-item {
+  color: var(--settings-sidebar-text, #2c2820) !important;
+  font-family: var(--settings-sidebar-font-family, "Roboto", "Helvetica", "Arial", sans-serif) !important;
+  font-size: var(--settings-sidebar-font-size, 14px) !important;
+  font-weight: var(--settings-sidebar-font-weight, 400) !important;
+  font-style: var(--settings-sidebar-font-style, normal) !important;
+  line-height: var(--settings-sidebar-line-height, 20px) !important;
+  letter-spacing: var(--settings-sidebar-letter-spacing, 0.15px) !important;
+}
+html.gold-theme .settings-sidebar-item[data-active="true"] {
+  background: transparent !important;
+  color: var(--settings-sidebar-active-text, #ffffff) !important;
+  font-weight: var(--settings-sidebar-active-font-weight, 400) !important;
+}
+html.gold-theme .settings-sidebar-item:hover:not([data-active="true"]) {
+  background-color: var(--settings-sidebar-hover-bg, rgba(74, 67, 52, 0.14)) !important;
+  color: var(--settings-sidebar-text, #2c2820) !important;
+}
+html.gold-theme .settings-sidebar-heading {
+  color: var(--settings-sidebar-title-color, #2c2820) !important;
+  font-family: var(--settings-sidebar-font-family, "Roboto", "Helvetica", "Arial", sans-serif) !important;
+  font-size: var(--settings-sidebar-title-font-size, 24px) !important;
+  font-weight: var(--settings-sidebar-title-font-weight, 600) !important;
+  font-style: normal !important;
+}
+html.gold-theme .settings-main-outer-panel {
+  background-color: var(--settings-panel-outer-bg, #f5e8bc) !important;
+  border: 1px solid var(--premium-border-subtle, rgba(74, 67, 52, 0.28)) !important;
+  border-radius: var(--premium-radius-lg, 16px) !important;
+}
+html.gold-theme .settings-main-inner-panel {
+  background-color: var(--settings-panel-inner-bg, #faf0d4) !important;
+  border-radius: var(--premium-radius-lg, 16px) !important;
+  box-shadow: var(--premium-panel-shadow, 0 4px 18px rgba(74, 67, 52, 0.1)) !important;
+}
+html.gold-theme .settings-main-inner-panel .MuiTypography-root {
+  color: var(--settings-panel-text, #2c2820);
+}
+html.gold-theme .settings-main-inner-panel .MuiButton-contained {
+  background: var(--app-button-background, linear-gradient(180deg, #4A4334 0%, #443D2E 50%, #3D3629 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border: none !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+  transition: transform var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    box-shadow var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    opacity 0.25s ease !important;
+}
+html.gold-theme .settings-main-inner-panel .MuiButton-contained:hover {
+  background: var(--app-button-background, linear-gradient(180deg, #4A4334 0%, #443D2E 50%, #3D3629 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  opacity: 0.92;
+  filter: none;
+}
+html.gold-theme .area-group-container {
+  background-color: var(--area-groups-panel-bg, #faf0d4) !important;
+  border-color: var(--area-groups-border, rgba(74, 67, 52, 0.28)) !important;
+}
+html.gold-theme .area-group-list-panel {
+  background-color: var(--area-groups-inner-bg, #ffffff) !important;
+  border-color: var(--area-groups-border, rgba(74, 67, 52, 0.28)) !important;
+}
+html.gold-theme .area-group-container .MuiTypography-root {
+  color: var(--settings-panel-text, #2c2820);
+}
+html.gold-theme .area-group-container .MuiButton-text,
+html.gold-theme .area-group-container .MuiButton-textPrimary {
+  color: var(--settings-panel-text, #2c2820);
+}
+html.gold-theme .area-group-container .MuiDivider-root {
+  border-color: var(--area-groups-border, rgba(74, 67, 52, 0.28));
+}
+html.gold-theme .select-area-premium-dialog {
+  background: var(--area-picker-light-dialog-bg, #faf0d4) !important;
+  background-size: auto !important;
+  animation: none !important;
+  border: 1px solid var(--premium-border-subtle, rgba(74, 67, 52, 0.28)) !important;
+  border-radius: var(--premium-radius-lg, 16px) !important;
+  box-shadow: var(--premium-dialog-shadow, 0 10px 28px rgba(0, 0, 0, 0.2)) !important;
+  color: var(--area-picker-light-dialog-title-color, #2c2820) !important;
+}
+html.gold-theme .select-area-premium-dialog::before {
+  display: none;
+}
+html.gold-theme .area-picker-confirm-dialog {
+  background: var(--area-picker-light-dialog-bg, #faf0d4) !important;
+  border: 1px solid var(--area-groups-border, rgba(74, 67, 52, 0.28)) !important;
+  color: var(--area-picker-light-dialog-title-color, #2c2820) !important;
+}
+html.gold-theme .area-picker-confirm-dialog .MuiDialogTitle-root,
+html.gold-theme .area-picker-confirm-dialog .MuiDialogContentText-root {
+  color: var(--area-picker-light-dialog-title-color, #2c2820) !important;
+}
+html.gold-theme .area-picker-confirm-dialog .MuiDialogContentText-root {
+  color: var(--settings-panel-muted-text, rgba(44, 40, 32, 0.72)) !important;
+}
+html.gold-theme .area-picker-light-dialog .MuiButton-contained,
+html.gold-theme .area-picker-confirm-dialog .MuiButton-contained,
+html.gold-theme .settings-theme-dialog .MuiButton-contained:not(.MuiButton-colorError),
+html.gold-theme .settings-floor-form .MuiButton-contained:not(.MuiButton-colorError) {
+  background: var(--app-button-background, linear-gradient(180deg, #4A4334 0%, #443D2E 50%, #3D3629 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border: none !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+  transition: transform var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    box-shadow var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    opacity 0.25s ease !important;
+}
+html.gold-theme .area-picker-light-dialog .MuiButton-contained:hover,
+html.gold-theme .area-picker-confirm-dialog .MuiButton-contained:hover,
+html.gold-theme .settings-theme-dialog .MuiButton-contained:not(.MuiButton-colorError):hover,
+html.gold-theme .settings-floor-form .MuiButton-contained:not(.MuiButton-colorError):hover {
+  background: var(--app-button-background, linear-gradient(180deg, #4A4334 0%, #443D2E 50%, #3D3629 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  opacity: 0.92;
+  filter: none;
+}
+html.gold-theme .settings-theme-dialog,
+html.gold-theme .settings-floor-form .MuiDialog-paper.settings-theme-dialog {
+  background-color: var(--area-picker-light-dialog-bg, #faf0d4) !important;
+}
+html.gold-theme .help-upload-zone {
+  background-color: var(--area-groups-inner-bg, #ffffff) !important;
+  border-color: var(--area-groups-border, rgba(74, 67, 52, 0.35)) !important;
+}
+html.gold-theme .help-upload-zone .MuiSvgIcon-root {
+  color: var(--home-tab-active-color, #3d3629) !important;
+}
+html.gold-theme .help-container .help-url-input .MuiOutlinedInput-root,
+html.gold-theme .help-container .help-url-input .MuiFilledInput-root,
+html.gold-theme .help-container .help-url-input .MuiOutlinedInput-root:hover,
+html.gold-theme .help-container .help-url-input .MuiFilledInput-root:hover {
+  background-color: var(--users-chip-bg, #f5e8bc) !important;
+}
+html.gold-theme .heatmap-floor-select-menu {
+  background-color: var(--heatmap-select-menu-bg, #f5e8bc) !important;
+}
+html.gold-theme .heatmap-floor-select-menu .MuiMenuItem-root:hover {
+  background-color: var(--heatmap-select-menu-hover, rgba(74, 67, 52, 0.12)) !important;
+}
+html.gold-theme .heatmap-floor-select-menu .MuiMenuItem-root.Mui-selected {
+  background-color: var(--heatmap-select-menu-selected, rgba(74, 67, 52, 0.22)) !important;
+}
+html.gold-theme .heatmap-floor-select-menu .MuiMenuItem-root.Mui-selected:hover {
+  background-color: var(--heatmap-select-menu-selected-hover, rgba(74, 67, 52, 0.28)) !important;
+}
+
+/* Gold theme — heatmap Rename area dialog (compact cream panel) */
+html.gold-theme .heatmap-rename-area-dialog .MuiDialog-paper {
+  max-width: 380px !important;
+}
+html.gold-theme .heatmap-rename-area-dialog-panel {
+  background-color: var(--heatmap-rename-dialog-bg, #faf0d4) !important;
+  background-image: none !important;
+  border-color: var(--heatmap-rename-dialog-border, rgba(74, 67, 52, 0.28)) !important;
+  box-shadow: var(--heatmap-rename-dialog-shadow, 0 8px 24px rgba(74, 67, 52, 0.18)) !important;
+}
+html.gold-theme .heatmap-rename-area-dialog .MuiDialogTitle-root {
+  color: var(--heatmap-rename-dialog-title-color, #2c2820) !important;
+}
+html.gold-theme .heatmap-rename-area-dialog .heatmap-rename-area-label {
+  color: var(--heatmap-rename-dialog-label-color, #2c2820) !important;
+}
+html.gold-theme .heatmap-rename-area-dialog .heatmap-rename-area-field .MuiOutlinedInput-root {
+  color: var(--heatmap-rename-dialog-field-text, #2c2820) !important;
+}
+html.gold-theme .heatmap-rename-area-dialog .heatmap-rename-area-field .MuiOutlinedInput-input {
+  color: var(--heatmap-rename-dialog-field-text, #2c2820) !important;
+}
+html.gold-theme .heatmap-rename-area-dialog .heatmap-rename-area-field .MuiOutlinedInput-root fieldset {
+  border-color: var(--heatmap-rename-dialog-field-border, rgba(74, 67, 52, 0.28)) !important;
+}
+html.gold-theme .heatmap-rename-area-dialog .heatmap-rename-save-btn.MuiButton-root {
+  background: var(--app-button-background, linear-gradient(180deg, #4a4334 0%, #443d2e 50%, #3d3629 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border: none !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+  transition: transform var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    box-shadow var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    opacity 0.25s ease !important;
+}
+html.gold-theme .heatmap-rename-area-dialog .heatmap-rename-save-btn.MuiButton-root:hover {
+  opacity: 0.92;
+}
+html.gold-theme .heatmap-rename-area-dialog .heatmap-rename-cancel-btn.MuiButton-root:hover {
+  background-color: rgba(74, 67, 52, 0.08) !important;
+}
+
+/* Gold theme — heatmap area sidebar loading overlay + spinner */
+html.gold-theme .heatmap-area-sidebar-loading {
+  background-color: var(--heatmap-sidebar-loading-overlay-bg, rgba(250, 240, 212, 0.94)) !important;
+}
+html.gold-theme .heatmap-area-sidebar-loading .MuiCircularProgress-root,
+html.gold-theme .heatmap-area-sidebar-loading .MuiCircularProgress-circle {
+  color: var(--heatmap-sidebar-loading-spinner-color, #4a4334) !important;
+}
+
+/* Theme 4 (Brown) — heatmap area sidebar loading overlay + spinner */
+html.theme-4-page .heatmap-area-sidebar-loading {
+  background-color: var(--heatmap-sidebar-loading-overlay-bg, rgba(250, 246, 239, 0.94)) !important;
+}
+html.theme-4-page .heatmap-area-sidebar-loading .MuiCircularProgress-root,
+html.theme-4-page .heatmap-area-sidebar-loading .MuiCircularProgress-circle {
+  color: var(--heatmap-sidebar-loading-spinner-color, #403a31) !important;
+}
+
+/* Custom theme — heatmap area sidebar matches accent (not default Content slate) */
+html.custom-theme .heatmap-area-sidebar {
+  background: var(--heatmap-sidebar-panel-bg) !important;
+  border-color: var(--heatmap-sidebar-panel-border, rgba(255, 255, 255, 0.2)) !important;
+}
+html.custom-theme .heatmap-area-sidebar-loading {
+  background-color: var(--heatmap-sidebar-loading-overlay-bg, rgba(244, 246, 249, 0.94)) !important;
+}
+html.custom-theme .heatmap-area-sidebar-loading .MuiCircularProgress-root,
+html.custom-theme .heatmap-area-sidebar-loading .MuiCircularProgress-circle {
+  color: var(--heatmap-sidebar-loading-spinner-color, rgba(0, 0, 0, 0.87)) !important;
+}
+
+/* Advanced heatmap sidebar — zone card labels must stay dark on white cards */
+.heatmap-area-sidebar .advanced-sidebar-zone-control-card,
+.heatmap-area-sidebar .advanced-sidebar-zone-control-card .MuiTypography-root {
+  color: #111111;
+}
+
+.heatmap-area-sidebar .advanced-sidebar-zone-control-card .advanced-zone-value-chip,
+.heatmap-area-sidebar .advanced-sidebar-zone-control-card .advanced-zone-value-chip .MuiTypography-root,
+.heatmap-area-sidebar .advanced-sidebar-zone-control-card .advanced-zone-value-chip .MuiInputBase-input,
+.heatmap-area-sidebar .advanced-sidebar-zone-control-card .advanced-zone-value-chip .MuiInput-input {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+  caret-color: #111111 !important;
+  background-color: #f5f5f5 !important;
+}
+
+html.custom-theme .heatmap-area-sidebar .advanced-sidebar-zone-control-card .advanced-zone-value-chip,
+html.gold-theme .heatmap-area-sidebar .advanced-sidebar-zone-control-card .advanced-zone-value-chip,
+html.theme-4-page .heatmap-area-sidebar .advanced-sidebar-zone-control-card .advanced-zone-value-chip,
+html.theme-3-page .heatmap-area-sidebar .advanced-sidebar-zone-control-card .advanced-zone-value-chip {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
+.heatmap-area-sidebar .advanced-sidebar-zone-control-card .MuiTypography-root[class*="MuiTypography"] {
+  -webkit-text-fill-color: currentColor;
+}
+
+/* Advanced heatmap sidebar — shade cards match white zone cards (dark text on light bg) */
+.heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card {
+  background-color: var(--heatmap-dialog-zone-card-bg, #ffffff) !important;
+  color: #111111 !important;
+}
+
+.heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card .MuiTypography-root,
+.heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card .MuiOutlinedInput-root,
+.heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card .MuiOutlinedInput-input {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
+html.custom-theme .heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card,
+html.gold-theme .heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card,
+html.theme-4-page .heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card,
+html.theme-3-page .heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card {
+  background-color: var(--heatmap-dialog-zone-card-bg, #ffffff) !important;
+  color: #111111 !important;
+}
+
+html.custom-theme .heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card .MuiTypography-root,
+html.gold-theme .heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card .MuiTypography-root,
+html.theme-4-page .heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card .MuiTypography-root,
+html.theme-3-page .heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card .MuiTypography-root,
+html.custom-theme .heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card .MuiOutlinedInput-input,
+html.gold-theme .heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card .MuiOutlinedInput-input,
+html.theme-4-page .heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card .MuiOutlinedInput-input,
+html.theme-3-page .heatmap-area-sidebar .advanced-heatmap-shades-panel .advanced-heatmap-shade-card .MuiOutlinedInput-input {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
+/* Shade % field — border on wrapper (native input; MUI outline was invisible) */
+.heatmap-area-sidebar .heatmap-shade-level-wrap {
+  width: 64px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  box-sizing: border-box !important;
+  background-color: #ffffff !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.45) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) !important;
+  overflow: visible !important;
+}
+.heatmap-area-sidebar .heatmap-shade-level-wrap:hover {
+  border-color: rgba(0, 0, 0, 0.65) !important;
+}
+.heatmap-area-sidebar .heatmap-shade-level-wrap:focus-within {
+  border-color: rgba(0, 0, 0, 0.8) !important;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.12) !important;
+}
+.heatmap-area-sidebar .heatmap-shade-level-input {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  text-align: center !important;
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+  caret-color: #111111 !important;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  padding: 0 4px !important;
+  box-sizing: border-box !important;
+}
+
+/* Brown / Gold — Area Settings dialog: cream shell, dark sections, white zone cards */
+html.theme-4-page .heatmap-area-settings-dialog .MuiDialog-paper,
+html.gold-theme .heatmap-area-settings-dialog .MuiDialog-paper {
+  background: var(--heatmap-dialog-paper-bg, #faf6ef) !important;
+}
+html.theme-4-page .heatmap-area-settings-dialog .MuiDialogContent-root,
+html.theme-4-page .heatmap-area-settings-dialog .MuiDialogActions-root,
+html.gold-theme .heatmap-area-settings-dialog .MuiDialogContent-root,
+html.gold-theme .heatmap-area-settings-dialog .MuiDialogActions-root {
+  background: var(--heatmap-dialog-paper-bg, #faf6ef) !important;
+}
+html.theme-4-page .heatmap-area-settings-dialog .asd-zone-control-card,
+html.gold-theme .heatmap-area-settings-dialog .asd-zone-control-card {
+  background-color: var(--heatmap-dialog-zone-card-bg, #ffffff) !important;
+  color: #111111 !important;
+}
+
+/* Area Settings dialog — brightness/CCT value chips on white zone cards */
+.heatmap-area-settings-dialog .asd-zone-control-card .advanced-zone-value-chip,
+.heatmap-area-settings-dialog .asd-zone-control-card .advanced-zone-value-chip .MuiTypography-root,
+.heatmap-area-settings-dialog .asd-zone-control-card .advanced-zone-value-chip .MuiInputBase-input,
+.heatmap-area-settings-dialog .asd-zone-control-card .advanced-zone-value-chip .MuiInput-input {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+  caret-color: #111111 !important;
+  background-color: #f5f5f5 !important;
+}
+
+html.custom-theme .heatmap-area-settings-dialog .asd-zone-control-card .advanced-zone-value-chip,
+html.gold-theme .heatmap-area-settings-dialog .asd-zone-control-card .advanced-zone-value-chip,
+html.theme-4-page .heatmap-area-settings-dialog .asd-zone-control-card .advanced-zone-value-chip,
+html.theme-3-page .heatmap-area-settings-dialog .asd-zone-control-card .advanced-zone-value-chip {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
+/* Occupancy mode pills: high-contrast labels on dark section backgrounds */
+.asd-occupancy-mode-btn.MuiButton-contained,
+html.gold-theme .asd-occupancy-mode-btn.MuiButton-contained,
+html.custom-theme .asd-occupancy-mode-btn.MuiButton-contained,
+html.theme-3-page .asd-occupancy-mode-btn.MuiButton-contained,
+html.theme-4-page .asd-occupancy-mode-btn.MuiButton-contained {
+  background-image: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+.asd-occupancy-mode-btn:not(.asd-occupancy-mode-btn--active).MuiButton-contained,
+html.gold-theme .asd-occupancy-mode-btn:not(.asd-occupancy-mode-btn--active).MuiButton-contained,
+html.custom-theme .asd-occupancy-mode-btn:not(.asd-occupancy-mode-btn--active).MuiButton-contained,
+html.theme-3-page .asd-occupancy-mode-btn:not(.asd-occupancy-mode-btn--active).MuiButton-contained,
+html.theme-4-page .asd-occupancy-mode-btn:not(.asd-occupancy-mode-btn--active).MuiButton-contained {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+  border: 2px solid var(--app-button, #3d4a5c) !important;
+}
+.asd-occupancy-mode-btn--active.MuiButton-contained,
+html.gold-theme .asd-occupancy-mode-btn--active.MuiButton-contained,
+html.custom-theme .asd-occupancy-mode-btn--active.MuiButton-contained,
+html.theme-3-page .asd-occupancy-mode-btn--active.MuiButton-contained,
+html.theme-4-page .asd-occupancy-mode-btn--active.MuiButton-contained {
+  background: var(--app-button, #3d4a5c) !important;
+  background-color: var(--app-button, #3d4a5c) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+.heatmap-area-settings-dialog .asd-zone-control-card .asd-zone-cct-range-label {
+  color: #3d4a5c !important;
+  -webkit-text-fill-color: #3d4a5c !important;
+}
+html.theme-4-page .heatmap-area-settings-dialog .MuiSelect-root,
+html.theme-4-page .heatmap-area-settings-dialog .MuiOutlinedInput-root,
+html.gold-theme .heatmap-area-settings-dialog .MuiSelect-root,
+html.gold-theme .heatmap-area-settings-dialog .MuiOutlinedInput-root {
+  background-color: var(--heatmap-dialog-zone-card-bg, #ffffff) !important;
+  color: #111111 !important;
+}
+
+/* Custom theme — Area Settings dialog Close on light footer */
+html.custom-theme .heatmap-area-settings-dialog .MuiDialog-paper,
+html.custom-theme .heatmap-area-settings-dialog .MuiDialogContent-root,
+html.custom-theme .heatmap-area-settings-dialog .MuiDialogActions-root {
+  background: var(--heatmap-dialog-paper-bg, #f4f6f9) !important;
+}
+html.custom-theme .heatmap-area-settings-dialog .heatmap-area-settings-close-btn.MuiButton-root {
+  color: var(--heatmap-dialog-close-text, rgba(0, 0, 0, 0.87)) !important;
+}
+
+/* Settings → Create/Edit Floor: cream panels + dark text on gold theme */
+html.gold-theme .settings-floor-form .MuiTypography-root {
+  color: var(--settings-form-label-color, #2c2820);
+}
+
+/* Chart card lift-on-hover (Energy & Space Utilization dashboards).
+   Smoothly raises the card and deepens the shadow on hover for a premium feel.
+   Applied via className="chart-card-animated" on outer chart wrappers only. */
+.chart-card-animated {
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease !important;
+  will-change: transform;
+}
+.chart-card-animated:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  z-index: 2;
+}
+
+/* Premium animated dialog card (Select Area / area picker style).
+   Slow shifting dark-blue gradient, subtle blue glow, inner highlight, and a
+   soft diagonal light-reflection shine across the top.
+   Applied via className="select-area-premium-dialog" on the dialog inner box. */
+.select-area-premium-dialog {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    #0f1b2e 0%,
+    #1b2a46 50%,
+    #0f1b2e 100%
+  ) !important;
+  background-size: 200% 200% !important;
+  animation: gradientMove 8s ease infinite;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 16px !important;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    0 0 1px rgba(0, 150, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+.select-area-premium-dialog::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 80% at 50% 0%,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.04) 35%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  z-index: 0;
+}
+.select-area-premium-dialog > * {
+  position: relative;
+  z-index: 1;
+}
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* overflow-x: hidden removed — html handles horizontal clipping; setting it here causes browser to auto-promote overflow-y:visible to auto, creating a double scrollbar */
+  /* Previous beige theme - kept for quick rollback */
+  /* background: linear-gradient(180deg, #ead9b6 0%, #e2cfa6 50%, #d6c193 100%) !important; */
+  /* Previous lavender attempt - kept for quick rollback */
+  /* background: linear-gradient(180deg, #d8d4e2 0%, #c5c1d3 50%, #b3afc4 100%) !important; */
+  /* Previous flat blue-gray attempt - kept for quick rollback */
+  /* background: linear-gradient(180deg, #c8d0dc 0%, #b0bac8 50%, #9aa5b6 100%) !important; */
+  /* Premium refined: atmospheric radial glow over desaturated blue-gray linear gradient */
+  background:
+    radial-gradient(
+      circle at 50% 15%,
+      rgba(255, 255, 255, 0.18) 0%,
+      rgba(214, 225, 244, 0.22) 20%,
+      rgba(189, 208, 235, 0.10) 40%,
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      #6f809d 0%,
+      #8fa6c7 42%,
+      #d7d9e4 100%
+    ) !important;
+  background-attachment: fixed !important;
+  background-color: transparent !important;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Global styles for better layout control */
+html {
+  height: auto;
+  min-height: 100vh;
+  overflow-x: hidden; /* Prevent horizontal scroll only */
+  overflow-y: auto; /* Enable vertical scroll for entire page */
+}
+body, #root {
+  height: auto;
+  min-height: 100vh;
+  /* overflow-x/overflow-y removed from body — only html should be the scroll container.
+     Setting overflow-x:hidden here causes browser to auto-promote overflow-y:visible to auto,
+     creating a second (inner) scrollbar alongside the html scrollbar. */
+}
+
+/* Responsive breakpoints for better mobile/tablet support */
+@media (max-width: 1440px) {
+  html {
+    overflow-y: auto; /* Ensure scrolling is enabled on smaller screens */
+  }
+  body, #root {
+    overflow-y: visible;
+  }
+  
+  /* Adjust padding for smaller screens */
+  .MuiContainer-root {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* Laptop size breakpoint for 1280x720 resolution */
+@media (min-width: 1280px) and (max-width: 1365px) {
+  html {
+    overflow-y: auto;
+  }
+  body, #root {
+    overflow-y: visible;
+  }
+  
+  /* Adjust padding for laptop screens */
+  .MuiContainer-root {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  
+  /* Optimize container heights for laptop screens */
+  .area-group-container,
+  .settings-container,
+  .lutron-website-container,
+  .help-container,
+  .schedule-container {
+    min-height: calc(100vh - 150px) !important;
+  }
+  
+  /* Ensure tables and lists are scrollable */
+  .MuiTableContainer-root,
+  .MuiList-root {
+    overflow-x: auto;
+  }
+  
+  /* Touch-friendly buttons and inputs (exclude compact shade % fields) */
+  .MuiButton-root,
+  .MuiTextField-root:not(.heatmap-shade-level-input) input {
+    min-height: 42px;
+  }
+  
+  /* Heatmap adjustments for laptop — cap height; JS availableHeight sets exact fit */
+  .heatmap-container {
+    max-height: calc(100vh - 96px) !important;
+  }
+  
+  /* Area group scrollable adjustments */
+  .area-group-scrollable {
+    max-height: calc(100vh - 360px) !important;
+  }
+}
+
+/* Laptop size breakpoint for 1280x720 resolution - specific adjustments */
+@media (min-width: 1280px) and (max-width: 1365px) and (max-height: 800px) {
+  /* Optimize for 1280x720 specifically */
+  .area-group-container,
+  .settings-container,
+  .lutron-website-container,
+  .help-container,
+  .schedule-container {
+    min-height: calc(100vh - 140px) !important;
+  }
+  
+  .heatmap-container {
+    max-height: calc(100vh - 88px) !important;
+  }
+  
+  .area-group-scrollable {
+    max-height: calc(100vh - 350px) !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  /* Tablet adjustments */
+  .area-group-container,
+  .settings-container,
+  .lutron-website-container,
+  .help-container,
+  .schedule-container {
+    min-height: calc(100vh - 140px) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  html {
+    overflow-y: auto; /* Ensure scrolling is enabled on mobile */
+  }
+  body, #root {
+    overflow-y: visible;
+  }
+  
+  /* Mobile adjustments */
+  .area-group-container,
+  .settings-container,
+  .lutron-website-container,
+  .help-container,
+  .schedule-container {
+    min-height: calc(100vh - 120px) !important;
+  }
+  
+  /* Reduce padding on mobile */
+  .MuiContainer-root {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Small mobile adjustments */
+  .area-group-container,
+  .settings-container,
+  .lutron-website-container,
+  .help-container,
+  .schedule-container {
+    min-height: calc(100vh - 100px) !important;
+  }
+}
+
+/* Utility classes for responsive design */
+.responsive-text {
+  font-size: clamp(0.875rem, 2.5vw, 1rem);
+}
+
+.responsive-padding {
+  padding: clamp(8px, 2vw, 24px);
+}
+
+.responsive-margin {
+  margin: clamp(4px, 1vw, 16px);
+}
+
+/* Ensure all content is accessible on smaller screens */
+@media (max-width: 1440px) {
+  /* Make sure tables and lists are scrollable horizontally if needed */
+  .MuiTableContainer-root,
+  .MuiList-root {
+    overflow-x: auto;
+  }
+  
+  /* Ensure buttons and inputs are touch-friendly (exclude compact shade % fields) */
+  .MuiButton-root,
+  .MuiTextField-root:not(.heatmap-shade-level-input) input {
+    min-height: 44px;
+  }
+}
+
+/* Heatmap: taller panel + sidebar scroll (Shades Apply reachable). Desktop only; mobile uses column scroll.
+   Use max-height as a cap — measured `availableHeight` from JS sets the actual height so the panel
+   does not extend below the viewport (which would hide Shades Apply even after scrolling). */
+@media (min-width: 900px) {
+  .heatmap-container {
+    max-height: calc(100vh - 88px) !important;
+    overflow: hidden !important;
+  }
+}
+
+/* Area status sidebar — shell + body clip; only zones list scrolls */
+.heatmap-container .heatmap-area-sidebar {
+  overflow: hidden !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+  overscroll-behavior: contain;
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.heatmap-container .heatmap-area-sidebar-body {
+  flex: 1 1 0% !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding-bottom: 8px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.heatmap-container .heatmap-area-sidebar-zones-list {
+  flex: 0 0 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: hidden !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+  padding-right: 8px !important;
+  box-sizing: border-box !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--heatmap-sidebar-scrollbar-thumb, rgba(30, 116, 197, 0.7))
+    var(--heatmap-sidebar-scrollbar-track, rgba(0, 0, 0, 0.08)) !important;
+}
+
+.heatmap-container .heatmap-area-sidebar-zones-list::-webkit-scrollbar {
+  width: 4px !important;
+  display: block !important;
+}
+
+.heatmap-container .heatmap-area-sidebar-zones-list::-webkit-scrollbar-track {
+  background: var(--heatmap-sidebar-scrollbar-track, rgba(0, 0, 0, 0.06)) !important;
+  margin-block: 2px !important;
+}
+
+.heatmap-container .heatmap-area-sidebar-zones-list::-webkit-scrollbar-thumb {
+  background: var(--heatmap-sidebar-scrollbar-thumb, rgba(30, 116, 197, 0.65)) !important;
+  border-radius: 4px !important;
+  min-height: 24px !important;
+}
+
+/* Theme fallbacks if tokens not yet applied — zones list scrollbar */
+html.gold-theme .heatmap-container .heatmap-area-sidebar-zones-list {
+  scrollbar-color: var(--heatmap-sidebar-scrollbar-thumb, #4A4334)
+    var(--heatmap-sidebar-scrollbar-track, rgba(0, 0, 0, 0.2));
+}
+
+html.gold-theme .heatmap-container .heatmap-area-sidebar-zones-list::-webkit-scrollbar-thumb {
+  background: var(--heatmap-sidebar-scrollbar-thumb, #4A4334) !important;
+}
+
+html.gold-theme .heatmap-container .heatmap-area-sidebar-zones-list::-webkit-scrollbar-thumb:hover {
+  background: var(--heatmap-sidebar-scrollbar-thumb-hover, #3a3428) !important;
+}
+
+html.theme-4-page .heatmap-container .heatmap-area-sidebar-zones-list {
+  scrollbar-color: var(--heatmap-sidebar-scrollbar-thumb, #403A31)
+    var(--heatmap-sidebar-scrollbar-track, rgba(0, 0, 0, 0.2));
+}
+
+html.theme-4-page .heatmap-container .heatmap-area-sidebar-zones-list::-webkit-scrollbar-thumb {
+  background: var(--heatmap-sidebar-scrollbar-thumb, #403A31) !important;
+}
+
+html.theme-4-page .heatmap-container .heatmap-area-sidebar-zones-list::-webkit-scrollbar-thumb:hover {
+  background: var(--heatmap-sidebar-scrollbar-thumb-hover, #322e27) !important;
+}
+
+html.theme-3-page .heatmap-container .heatmap-area-sidebar-zones-list {
+  scrollbar-color: var(--heatmap-sidebar-scrollbar-thumb, #3D4A5C)
+    var(--heatmap-sidebar-scrollbar-track, rgba(0, 0, 0, 0.18));
+}
+
+html.theme-3-page .heatmap-container .heatmap-area-sidebar-zones-list::-webkit-scrollbar-thumb {
+  background: var(--heatmap-sidebar-scrollbar-thumb, #3D4A5C) !important;
+}
+
+html.theme-3-page .heatmap-container .heatmap-area-sidebar-zones-list::-webkit-scrollbar-thumb:hover {
+  background: var(--heatmap-sidebar-scrollbar-thumb-hover, #2f3948) !important;
+}
+
+html.custom-theme .heatmap-container .heatmap-area-sidebar-zones-list {
+  scrollbar-color: var(--heatmap-sidebar-scrollbar-thumb, var(--app-button, #4a586c))
+    var(--heatmap-sidebar-scrollbar-track, rgba(0, 0, 0, 0.18));
+}
+
+html.custom-theme .heatmap-container .heatmap-area-sidebar-zones-list::-webkit-scrollbar-thumb {
+  background: var(--heatmap-sidebar-scrollbar-thumb, var(--app-button, #4a586c)) !important;
+}
+
+@media (min-width: 1440px) {
+  .heatmap-container {
+    max-height: calc(100vh - 88px) !important;
+    overflow: hidden !important;
+  }
+
+  /* Floorplan column only — never force overflow:hidden on the area sidebar tree */
+  .heatmap-container > *:not(.heatmap-area-sidebar),
+  .heatmap-container > *:not(.heatmap-area-sidebar) * {
+    overflow: hidden !important;
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
+  }
+
+  .heatmap-container .heatmap-area-sidebar {
+    overflow: hidden !important;
+  }
+
+  .heatmap-container .heatmap-area-sidebar-body {
+    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+  }
+
+  .heatmap-container .heatmap-area-sidebar-zones-list {
+    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+  }
+}
+
+.heatmap-legends-nav {
+  position: absolute !important;
+  bottom: 8px !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 10 !important;
+  background: var(--heatmap-legends-nav-bg, rgba(255, 255, 255, 0.95)) !important;
+  color: var(--heatmap-legends-nav-text, #000000) !important;
+  backdrop-filter: blur(4px) !important;
+  border-radius: 8px !important;
+  margin: 0 8px !important;
+  padding: 4px 8px !important;
+}
+html.gold-theme .heatmap-legends-nav,
+html.gold-theme .heatmap-legends-nav .MuiTypography-root {
+  color: var(--heatmap-legends-nav-text, #2c2820) !important;
+  text-shadow: none !important;
+}
+html.gold-theme .heatmap-legends-nav .MuiIconButton-root,
+html.gold-theme .heatmap-legends-nav .MuiSvgIcon-root {
+  color: var(--heatmap-legends-nav-text, #2c2820) !important;
+}
+
+/* Gold theme — heatmap tabs match dashboard (white pill, dark active text) */
+html.gold-theme .heatmap-display-mode-tabs .heatmap-tab-indicator {
+  background-color: var(--heatmap-tab-indicator-bg, #ffffff) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+html.gold-theme .heatmap-display-mode-tabs .heatmap-mode-tab-btn--active {
+  color: var(--heatmap-tab-active-text, #4a4334) !important;
+}
+html.gold-theme .heatmap-display-mode-tabs .heatmap-mode-tab-btn:not(.heatmap-mode-tab-btn--active) {
+  color: var(--heatmap-tab-inactive-text, #ffffff) !important;
+}
+html.gold-theme .heatmap-display-mode-tabs .heatmap-mode-tab-btn:not(.heatmap-mode-tab-btn--active):hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+/* Brown (Theme 4) — dark brown pill track; white inactive labels (same as Gold/Blue) */
+html.theme-4-page .heatmap-display-mode-tabs .heatmap-mode-tab-btn--active {
+  color: var(--heatmap-tab-active-text, #403a31) !important;
+}
+html.theme-4-page .heatmap-display-mode-tabs .heatmap-mode-tab-btn:not(.heatmap-mode-tab-btn--active) {
+  color: var(--heatmap-tab-inactive-text, #ffffff) !important;
+}
+html.theme-4-page .heatmap-display-mode-tabs .heatmap-mode-tab-btn:not(.heatmap-mode-tab-btn--active):hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+/* Theme settings — inactive picker tabs readable on cream cards */
+html.gold-theme .pill-tab:not(.active),
+html.gold-theme .color-picker-card .pill-tab:not(.active) {
+  background: #ffffff !important;
+  color: var(--settings-panel-text, #2c2820) !important;
+  border-color: var(--settings-panel-border, rgba(74, 67, 52, 0.28)) !important;
+}
+html.gold-theme .color-picker-card .pill-tab.active {
+  background: var(--settings-theme-pill-active-bg, linear-gradient(180deg, #4A4334 0%, #443D2E 50%, #3D3629 100%)) !important;
+  background-color: transparent !important;
+  color: var(--settings-theme-pill-active-text, #ffffff) !important;
+  border-color: transparent !important;
+}
+html.gold-theme .color-picker-card .save-button.MuiButton-root,
+html.gold-theme .color-picker-card .save-button.MuiButton-root:hover {
+  background: var(--settings-theme-action-button-bg, linear-gradient(180deg, #4A4334 0%, #443D2E 50%, #3D3629 100%)) !important;
+  background-color: transparent !important;
+  color: var(--settings-theme-action-button-text, #ffffff) !important;
+  opacity: 1;
+  filter: none;
+}
+html.gold-theme .color-picker-card .save-button.MuiButton-root:hover {
+  opacity: 0.92 !important;
+}
+html.gold-theme .color-picker-card .theme-background-preset-btn.MuiButton-contained {
+  background: var(--settings-theme-pill-active-bg, linear-gradient(180deg, #4A4334 0%, #443D2E 50%, #3D3629 100%)) !important;
+  background-color: transparent !important;
+  color: var(--settings-theme-pill-active-text, #ffffff) !important;
+  border-color: transparent !important;
+}
+html.gold-theme .color-picker-card .theme-background-preset-btn.MuiButton-outlined {
+  color: var(--settings-panel-text, #2c2820) !important;
+  border-color: var(--settings-panel-border, rgba(74, 67, 52, 0.28)) !important;
+  background-color: var(--users-input-bg, #ffffff) !important;
+}
+html.gold-theme .color-picker-card .theme-background-preset-btn.MuiButton-outlined:hover {
+  background-color: var(--settings-panel-outer-bg, #f5e8bc) !important;
+  border-color: var(--home-tab-active-color, #3D3629) !important;
+}
+html.gold-theme .color-picker-card {
+  background: var(--settings-theme-card-bg, #faf0d4) !important;
+}
+html.gold-theme .theme-background-preview {
+  background-color: var(--settings-theme-card-bg, #faf0d4) !important;
+  border-color: var(--settings-panel-border, rgba(74, 67, 52, 0.28)) !important;
+}
+/* Theme 2 (gold) — primary contained buttons app-wide (Help download buttons styled separately) */
+html.gold-theme .MuiButton-contained:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.help-download-btn):not(.heatmap-mode-tab-btn):not(.asd-occupancy-mode-btn),
+html.gold-theme .MuiButton-containedPrimary:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.help-download-btn):not(.heatmap-mode-tab-btn):not(.asd-occupancy-mode-btn) {
+  background: var(--app-button-background, linear-gradient(180deg, #4A4334 0%, #443D2E 50%, #3D3629 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border: none !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+  transition: transform var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    box-shadow var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    opacity 0.25s ease !important;
+}
+html.gold-theme .MuiButton-contained:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.help-download-btn):not(.heatmap-mode-tab-btn):not(.asd-occupancy-mode-btn):hover,
+html.gold-theme .MuiButton-containedPrimary:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.help-download-btn):not(.heatmap-mode-tab-btn):not(.asd-occupancy-mode-btn):hover {
+  background: var(--app-button-background, linear-gradient(180deg, #4A4334 0%, #443D2E 50%, #3D3629 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  opacity: 0.92;
+  filter: none;
+}
+html.gold-theme .MuiButton-contained.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.help-download-btn):not(.heatmap-mode-tab-btn):not(.asd-occupancy-mode-btn),
+html.gold-theme .MuiButton-containedPrimary.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.help-download-btn):not(.heatmap-mode-tab-btn):not(.asd-occupancy-mode-btn) {
+  background: #A6A49A !important;
+  background-color: #A6A49A !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+html.gold-theme .pill-tab.active {
+  background: var(--app-button-background, linear-gradient(180deg, #4A4334 0%, #443D2E 50%, #3D3629 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border-color: transparent !important;
+}
+
+/* Gold theme — Help page: strong contrast between PDF available vs missing */
+html.gold-theme .help-container .help-download-btn--available.MuiButton-contained {
+  background: var(--help-download-available-bg, #faf0d4) !important;
+  background-color: var(--help-download-available-bg, #faf0d4) !important;
+  background-image: none !important;
+  color: var(--help-download-available-text, #000000) !important;
+  border: 2px solid var(--help-download-available-border, #4a4334) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+html.gold-theme .help-container .help-download-btn--available.MuiButton-contained:hover {
+  background: var(--help-download-available-hover-bg, #f5e8bc) !important;
+  background-color: var(--help-download-available-hover-bg, #f5e8bc) !important;
+  background-image: none !important;
+  color: var(--help-download-available-text, #000000) !important;
+  border-color: var(--help-download-available-border, #4a4334) !important;
+  opacity: 1 !important;
+}
+html.gold-theme .help-container .help-download-btn--unavailable.MuiButton-outlined,
+html.gold-theme .help-container .help-download-btn--unavailable.MuiButton-outlined.Mui-disabled {
+  background: var(--help-download-unavailable-bg, transparent) !important;
+  background-color: var(--help-download-unavailable-bg, transparent) !important;
+  background-image: none !important;
+  color: var(--help-download-unavailable-text, rgba(255, 255, 255, 0.42)) !important;
+  border: 2px dashed var(--help-download-unavailable-border, rgba(255, 255, 255, 0.45)) !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
+  filter: none !important;
+  -webkit-text-fill-color: var(--help-download-unavailable-text, rgba(255, 255, 255, 0.42)) !important;
+}
+
+/* Custom theme — white-surface fields use dark text (area filter, duration, etc.) */
+html.custom-theme .dashboard-alert-type-filter-trigger,
+html.custom-theme .dashboard-area-filter-trigger {
+  background-color: var(--dashboard-select-field-bg, #ffffff) !important;
+  border-color: var(--dashboard-select-field-border) !important;
+  color: var(--dashboard-select-field-text) !important;
+}
+html.custom-theme .dashboard-area-filter-trigger .dashboard-area-filter-chevron {
+  color: var(--dashboard-select-field-text) !important;
+}
+html.custom-theme .dashboard-area-tree-panel,
+html.custom-theme .dashboard-area-tree-panel span,
+html.custom-theme .dashboard-area-tree-panel div,
+html.custom-theme .dashboard-area-tree-panel .dashboard-area-tree-label {
+  color: var(--dashboard-select-field-text) !important;
+}
+html.custom-theme .dashboard-duration-select,
+html.custom-theme .dashboard-lighting-unit-select,
+html.custom-theme .dashboard-duration-select .MuiSelect-select,
+html.custom-theme .dashboard-duration-select .MuiOutlinedInput-input,
+html.custom-theme .dashboard-lighting-unit-select .MuiSelect-select,
+html.custom-theme .dashboard-lighting-unit-select .MuiOutlinedInput-input,
+html.custom-theme .dashboard-duration-select .MuiSelect-icon,
+html.custom-theme .dashboard-lighting-unit-select .MuiSelect-icon {
+  color: var(--dashboard-select-field-text) !important;
+  -webkit-text-fill-color: var(--dashboard-select-field-text) !important;
+}
+html.custom-theme .dashboard-duration-select,
+html.custom-theme .dashboard-lighting-unit-select {
+  background-color: var(--dashboard-select-field-bg, #ffffff) !important;
+}
+html.custom-theme .settings-main-inner-panel .ql-toolbar .ql-stroke {
+  stroke: var(--home-editor-text, var(--settings-panel-text)) !important;
+}
+html.custom-theme .settings-main-inner-panel .ql-toolbar .ql-fill {
+  fill: var(--home-editor-text, var(--settings-panel-text)) !important;
+}
+html.custom-theme .settings-main-inner-panel .ql-toolbar .ql-picker-label {
+  color: var(--home-editor-text, var(--settings-panel-text)) !important;
+}
+html.custom-theme .settings-main-inner-panel .ql-container .ql-editor,
+html.custom-theme .settings-main-inner-panel .ql-container .ql-editor * {
+  color: var(--home-editor-text, var(--settings-panel-text)) !important;
+}
+html.custom-theme .settings-main-inner-panel .ql-container .ql-editor.ql-blank::before {
+  color: var(--settings-panel-muted-text, rgba(0, 0, 0, 0.6)) !important;
+}
+html.custom-theme .settings-main-inner-panel input,
+html.custom-theme .settings-main-inner-panel textarea,
+html.custom-theme .settings-main-inner-panel .MuiOutlinedInput-input,
+html.custom-theme .settings-main-inner-panel .MuiInputBase-input {
+  color: var(--settings-form-control-text, rgba(0, 0, 0, 0.87)) !important;
+}
+
+/* Custom theme — Users create/edit modals (portal; white fields need dark text) */
+html.custom-theme .users-modal-shell .MuiOutlinedInput-input,
+html.custom-theme .users-modal-shell .MuiInputBase-input,
+html.custom-theme .users-modal-shell .MuiSelect-select,
+html.custom-theme .users-search-field .MuiOutlinedInput-input {
+  color: var(--users-input-text, rgba(0, 0, 0, 0.87)) !important;
+  -webkit-text-fill-color: var(--users-input-text, rgba(0, 0, 0, 0.87)) !important;
+}
+html.custom-theme .users-modal-shell .MuiInputLabel-root {
+  color: var(--users-input-label-text, rgba(0, 0, 0, 0.6)) !important;
+}
+html.custom-theme .users-modal-shell .MuiInputLabel-root.Mui-focused {
+  color: var(--users-input-text, rgba(0, 0, 0, 0.87)) !important;
+}
+html.custom-theme .users-modal-shell .MuiSelect-icon {
+  color: var(--users-input-label-text, rgba(0, 0, 0, 0.6)) !important;
+}
+html.custom-theme .users-modal-shell .MuiOutlinedInput-input.Mui-disabled,
+html.custom-theme .users-modal-shell .MuiInputBase-input.Mui-disabled {
+  color: var(--users-readonly-field-text, rgba(0, 0, 0, 0.87)) !important;
+  -webkit-text-fill-color: var(--users-readonly-field-text, rgba(0, 0, 0, 0.87)) !important;
+}
+html.custom-theme .users-modal-shell .MuiTypography-root {
+  color: var(--settings-panel-text, rgba(0, 0, 0, 0.87));
+}
+html.custom-theme .users-modal-shell .MuiTypography-colorTextSecondary,
+html.custom-theme .users-modal-shell .MuiTypography-body2,
+html.custom-theme .users-modal-shell .MuiTypography-caption {
+  color: var(--settings-panel-muted-text, rgba(0, 0, 0, 0.6)) !important;
+}
+
+/* Custom + preset light-page themes: readable inherited page text */
+html.custom-theme body,
+html.custom-theme #root,
+html.gold-theme body,
+html.gold-theme #root,
+html.theme-3-page body,
+html.theme-3-page #root,
+html.theme-4-page body,
+html.theme-4-page #root {
+  color: var(--app-page-text, rgba(0, 0, 0, 0.87));
+}
+
+/* Custom hex-picker theme — page shell + settings chrome (Blue-like coordinated palette) */
+html.custom-theme {
+  background-color: var(--app-background) !important;
+}
+html.custom-theme body,
+html.custom-theme #root {
+  background: var(--app-page-background) !important;
+  background-color: var(--app-background) !important;
+  background-attachment: fixed !important;
+}
+html.custom-theme footer {
+  background-color: var(--footer-background-color, var(--app-background)) !important;
+  background-image: var(--footer-background) !important;
+  background-size: cover !important;
+  background-position: center bottom !important;
+  background-repeat: no-repeat !important;
+}
+html.custom-theme .settings-sidebar-item {
+  color: var(--settings-sidebar-text, #1a2a42) !important;
+  font-family: var(--settings-sidebar-font-family, "Roboto", "Helvetica", "Arial", sans-serif) !important;
+  font-size: var(--settings-sidebar-font-size, 14px) !important;
+  font-weight: var(--settings-sidebar-font-weight, 400) !important;
+  font-style: var(--settings-sidebar-font-style, normal) !important;
+  line-height: var(--settings-sidebar-line-height, 20px) !important;
+  letter-spacing: var(--settings-sidebar-letter-spacing, 0.15px) !important;
+}
+html.custom-theme .settings-sidebar-item[data-active="true"] {
+  background: transparent !important;
+  color: var(--settings-sidebar-active-text, #ffffff) !important;
+  font-weight: var(--settings-sidebar-active-font-weight, 400) !important;
+}
+html.custom-theme .settings-sidebar-item:hover:not([data-active="true"]) {
+  background-color: var(--settings-sidebar-hover-bg, rgba(61, 74, 92, 0.12)) !important;
+  color: var(--settings-sidebar-text, #1a2a42) !important;
+}
+html.custom-theme .settings-sidebar-heading {
+  color: var(--settings-sidebar-title-color, #1a2a42) !important;
+  font-family: var(--settings-sidebar-font-family, "Roboto", "Helvetica", "Arial", sans-serif) !important;
+  font-size: var(--settings-sidebar-title-font-size, 24px) !important;
+  font-weight: var(--settings-sidebar-title-font-weight, 600) !important;
+  font-style: normal !important;
+}
+html.custom-theme .settings-main-outer-panel {
+  background-color: var(--settings-panel-outer-bg) !important;
+  border: 1px solid var(--settings-panel-border, rgba(0, 0, 0, 0.12)) !important;
+  border-radius: var(--premium-radius-lg, 16px) !important;
+}
+html.custom-theme .settings-main-inner-panel {
+  background-color: var(--settings-panel-inner-bg) !important;
+  border-radius: var(--premium-radius-lg, 16px) !important;
+}
+html.custom-theme .color-picker-card {
+  background: var(--settings-theme-card-bg) !important;
+}
+html.custom-theme .settings-main-inner-panel .MuiTypography-root {
+  color: var(--settings-panel-text, #1a2a42);
+}
+html.custom-theme .settings-sidebar-nav-track .settings-sidebar-item--pill[data-active="true"] {
+  background: transparent !important;
+  color: var(--settings-sidebar-active-text, #ffffff) !important;
+}
+html.custom-theme .settings-main-inner-panel .MuiButton-contained {
+  background: var(--app-button-background) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border: none !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+}
+html.custom-theme .settings-main-inner-panel .MuiButton-contained:hover {
+  background: var(--app-button-background) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  opacity: 0.92;
+  filter: none;
+}
+html.custom-theme .pill-tab:not(.active),
+html.custom-theme .color-picker-card .pill-tab:not(.active) {
+  background: #ffffff !important;
+  color: var(--settings-panel-text, #1a2a42) !important;
+  border: 1px solid var(--settings-theme-pill-inactive-border, #c5cdd8) !important;
+}
+html.custom-theme .color-picker-card .pill-tab.active,
+html.custom-theme .pill-tab.active {
+  background: var(--settings-theme-pill-active-bg, var(--app-button-background)) !important;
+  background-color: transparent !important;
+  color: var(--settings-theme-pill-active-text, #ffffff) !important;
+  border-color: transparent !important;
+}
+html.custom-theme .color-picker-card .save-button.MuiButton-root,
+html.custom-theme .color-picker-card .save-button.MuiButton-root:hover {
+  background: var(--settings-theme-action-button-bg, var(--app-button-background)) !important;
+  background-color: transparent !important;
+  color: var(--settings-theme-action-button-text, #ffffff) !important;
+  opacity: 1;
+  filter: none;
+}
+html.custom-theme .color-picker-card .save-button.MuiButton-root:hover {
+  opacity: 0.92 !important;
+}
+html.custom-theme .color-picker-card .theme-background-preset-btn.MuiButton-contained {
+  background: var(--settings-theme-pill-active-bg, var(--app-button-background)) !important;
+  background-color: transparent !important;
+  color: var(--settings-theme-pill-active-text, #ffffff) !important;
+  border-color: transparent !important;
+}
+html.custom-theme .color-picker-card .theme-background-preset-btn.MuiButton-outlined {
+  color: var(--settings-panel-text, #1a2a42) !important;
+  border: 1px solid var(--settings-theme-pill-inactive-border, #c5cdd8) !important;
+  background-color: var(--users-input-bg, #ffffff) !important;
+}
+html.custom-theme .MuiButton-contained:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.theme-background-preset-btn):not(.asd-occupancy-mode-btn),
+html.custom-theme .MuiButton-containedPrimary:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.theme-background-preset-btn):not(.asd-occupancy-mode-btn) {
+  background: var(--app-button-background) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border: none !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+}
+html.custom-theme .MuiButton-contained:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.theme-background-preset-btn):not(.asd-occupancy-mode-btn):hover,
+html.custom-theme .MuiButton-containedPrimary:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.theme-background-preset-btn):not(.asd-occupancy-mode-btn):hover {
+  background: var(--app-button-background) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  opacity: 0.92;
+  filter: none;
+}
+/* Custom themes (green/pink/etc.) — must match/exceed :not() specificity of enabled rule */
+html.custom-theme .MuiButton-contained.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.theme-background-preset-btn):not(.asd-occupancy-mode-btn),
+html.custom-theme .MuiButton-containedPrimary.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.theme-background-preset-btn):not(.asd-occupancy-mode-btn) {
+  background: #A6A49A !important;
+  background-color: #A6A49A !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Custom theme — Select Area / area picker (Gold light shell + Brown dark-accent shell) */
+html.custom-theme .select-area-premium-dialog {
+  background: var(--area-picker-light-dialog-bg, var(--dashboard-card-background)) !important;
+  background-size: auto !important;
+  animation: none !important;
+  border: 1px solid var(--schedule-panel-border, rgba(0, 0, 0, 0.15)) !important;
+  border-radius: var(--premium-radius-lg, 16px) !important;
+  box-shadow: var(--premium-dialog-shadow, 0 10px 28px rgba(0, 0, 0, 0.22)) !important;
+  color: var(--area-picker-light-dialog-title-color, #ffffff) !important;
+}
+html.custom-theme .select-area-premium-dialog::before {
+  display: none;
+}
+html.custom-theme .area-picker-light-dialog,
+html.custom-theme .area-picker-confirm-dialog {
+  background: var(--area-picker-light-dialog-bg) !important;
+  border: 1px solid var(--schedule-panel-border, rgba(0, 0, 0, 0.15)) !important;
+  color: var(--area-picker-light-dialog-title-color) !important;
+}
+html.custom-theme .area-picker-light-dialog .MuiDialogTitle-root,
+html.custom-theme .area-picker-confirm-dialog .MuiDialogTitle-root {
+  color: var(--area-picker-light-dialog-title-color) !important;
+}
+html.custom-theme .area-picker-confirm-dialog .MuiDialogContentText-root {
+  color: var(--area-picker-confirm-dialog-body-text, rgba(0, 0, 0, 0.72)) !important;
+}
+html.custom-theme .area-picker-light-dialog .MuiSelect-root,
+html.custom-theme .area-picker-light-dialog .MuiOutlinedInput-root,
+html.custom-theme .area-picker-light-dialog .MuiInputBase-root,
+html.custom-theme .area-picker-light-dialog .MuiSelect-icon {
+  color: var(--area-picker-light-dialog-field-text) !important;
+}
+html.custom-theme .area-picker-light-dialog .area-picker-field-surface,
+html.custom-theme .area-picker-light-dialog .area-picker-field-surface .MuiTypography-root {
+  color: var(--area-picker-light-dialog-field-text) !important;
+}
+html.custom-theme .area-picker-light-dialog .MuiButton-contained,
+html.custom-theme .area-picker-confirm-dialog .MuiButton-contained {
+  background: var(--app-button-background) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border: none !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+}
+html.custom-theme .area-picker-light-dialog .MuiButton-contained:hover,
+html.custom-theme .area-picker-confirm-dialog .MuiButton-contained:hover {
+  background: var(--app-button-background) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  opacity: 0.92;
+  filter: none;
+}
+
+/* Gold theme: replace default blue body gradient (fixes thin blue line at viewport bottom) */
+html.gold-theme {
+  background-color: var(--app-background) !important;
+}
+html.gold-theme body,
+html.gold-theme #root {
+  background: var(--app-page-background, var(--app-background)) !important;
+  background-color: var(--app-background) !important;
+  background-attachment: fixed !important;
+}
+
+/* Gold footer: opaque base stops default blue body gradient bleeding through */
+html.gold-theme footer {
+  background-color: var(--footer-background-color, var(--app-background)) !important;
+  background-image: var(--footer-background) !important;
+  background-size: cover !important;
+  background-position: center bottom !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Gold theme — export dropdown menus (project-wide; trigger stays context-aware) */
+html.gold-theme .chart-export-dropdown,
+html.gold-theme .alerts-export-dropdown {
+  background-color: var(--alerts-export-menu-bg, #faf0d4) !important;
+  border-color: var(--alerts-export-menu-border, rgba(74, 67, 52, 0.28)) !important;
+}
+html.gold-theme .chart-export-dropdown button,
+html.gold-theme .alerts-export-dropdown button {
+  color: var(--alerts-export-menu-text, #2c2820) !important;
+}
+html.gold-theme .chart-export-dropdown button:hover:not(:disabled),
+html.gold-theme .alerts-export-dropdown button:hover:not(:disabled) {
+  background-color: var(--alerts-menu-hover, #f5e8bc) !important;
+}
+
+/* Theme 4 (Brown) — export dropdown menus (project-wide; trigger stays context-aware) */
+html.theme-4-page .chart-export-dropdown,
+html.theme-4-page .alerts-export-dropdown {
+  background-color: var(--alerts-export-menu-bg, #faf6ef) !important;
+  border-color: var(--alerts-export-menu-border, rgba(64, 58, 49, 0.28)) !important;
+}
+html.theme-4-page .chart-export-dropdown button,
+html.theme-4-page .alerts-export-dropdown button {
+  color: var(--alerts-export-menu-text, #2c2820) !important;
+}
+html.theme-4-page .chart-export-dropdown button:hover:not(:disabled),
+html.theme-4-page .alerts-export-dropdown button:hover:not(:disabled) {
+  background-color: var(--alerts-menu-hover, #f0ebe3) !important;
+}
+
+/* Custom theme — Super Admin profile menu (Reset Password / Logout) */
+html.custom-theme .topbar-profile-menu,
+html.custom-theme .topbar-profile-menu-root .MuiPaper-root {
+  background-color: var(--topbar-profile-menu-bg) !important;
+  color: var(--topbar-profile-menu-text) !important;
+  border-color: var(--topbar-profile-menu-border) !important;
+  box-shadow: var(--premium-card-shadow, 0 4px 12px rgba(0, 0, 0, 0.15)) !important;
+}
+html.custom-theme .topbar-profile-menu .topbar-profile-menu-item:not(:last-child),
+html.custom-theme .topbar-profile-menu-root .topbar-profile-menu-item:not(:last-child) {
+  color: var(--topbar-profile-menu-text) !important;
+  border-bottom: 1px solid var(--topbar-profile-menu-border) !important;
+}
+html.custom-theme .topbar-profile-menu .MuiMenuItem-root.topbar-profile-menu-item:hover,
+html.custom-theme .topbar-profile-menu .MuiMenuItem-root.topbar-profile-menu-item.Mui-focusVisible,
+html.custom-theme .topbar-profile-menu-root .MuiMenuItem-root.topbar-profile-menu-item:hover,
+html.custom-theme .topbar-profile-menu-root .MuiMenuItem-root.topbar-profile-menu-item.Mui-focusVisible {
+  background-color: var(--topbar-profile-menu-hover-bg) !important;
+}
+html.custom-theme .topbar-profile-trigger,
+html.custom-theme .topbar-profile-trigger .MuiTypography-root,
+html.custom-theme .topbar-profile-trigger .MuiSvgIcon-root,
+html.custom-theme .topbar-profile-trigger .MuiAvatar-root {
+  color: var(--topbar-profile-trigger-text, var(--topbar-nav-inactive-text, #ffffff)) !important;
+}
+
+/* Custom theme — export dropdown menus (same pattern as Gold / Blue / Brown) */
+html.custom-theme .chart-export-dropdown,
+html.custom-theme .alerts-export-dropdown {
+  background-color: var(--alerts-export-menu-bg) !important;
+  border-color: var(--alerts-export-menu-border) !important;
+}
+html.custom-theme .chart-export-dropdown button,
+html.custom-theme .alerts-export-dropdown button {
+  color: var(--alerts-export-menu-text) !important;
+}
+html.custom-theme .chart-export-dropdown button:hover:not(:disabled),
+html.custom-theme .alerts-export-dropdown button:hover:not(:disabled) {
+  background-color: var(--alerts-menu-hover) !important;
+}
+
+/* Gold theme — dashboard alerts menus (pagination, type filter) */
+html.gold-theme .alerts-export-dropdown button:hover:not(:disabled) {
+  background-color: var(--alerts-menu-hover, #f5e8bc) !important;
+}
+html.gold-theme .dashboard-alert-type-filter-trigger,
+html.gold-theme .dashboard-area-filter-trigger {
+  background-color: var(--dashboard-alert-filter-bg, #ffffff) !important;
+  border-color: var(--dashboard-alert-filter-border, rgba(74, 67, 52, 0.28)) !important;
+  color: var(--dashboard-select-field-text, #2c2820) !important;
+}
+html.gold-theme .dashboard-area-filter-trigger .dashboard-area-filter-chevron {
+  color: var(--dashboard-select-field-text, #2c2820) !important;
+}
+html.gold-theme .dashboard-area-tree-panel,
+html.gold-theme .dashboard-area-tree-panel span {
+  color: var(--dashboard-select-field-text, #2c2820) !important;
+}
+html.gold-theme .dashboard-alert-type-filter-menu {
+  background-color: var(--dashboard-alert-filter-menu-bg, #faf0d4) !important;
+  border-color: var(--dashboard-alert-filter-border, rgba(74, 67, 52, 0.28)) !important;
+}
+
+/* Gold theme — dashboard area tree checkboxes + selects */
+html.gold-theme .dashboard-area-tree-panel input[type="checkbox"],
+html.gold-theme .dashboard-alert-type-filter-menu input[type="checkbox"] {
+  accent-color: var(--dashboard-control-accent, #4a4334);
+}
+html.gold-theme .dashboard-area-tree-panel input[type="checkbox"]:hover,
+html.gold-theme .dashboard-area-tree-panel input[type="checkbox"]:focus-visible,
+html.gold-theme .dashboard-alert-type-filter-menu input[type="checkbox"]:hover,
+html.gold-theme .dashboard-alert-type-filter-menu input[type="checkbox"]:focus-visible {
+  accent-color: var(--dashboard-control-accent, #4a4334);
+  outline-color: var(--dashboard-control-accent, #4a4334);
+}
+html.gold-theme .dashboard-area-tree-floor-row:hover {
+  background-color: var(--dashboard-area-tree-hover-bg, #f5e8bc) !important;
+}
+html.gold-theme .dashboard-alert-type-filter-item:hover {
+  background-color: var(--dashboard-alert-filter-hover-bg, rgba(74, 67, 52, 0.08)) !important;
+}
+html.gold-theme .dashboard-filter-menu {
+  background-color: var(--dashboard-select-option-bg, #faf0d4) !important;
+}
+html.gold-theme .dashboard-filter-menu .MuiMenuItem-root:hover,
+html.gold-theme .dashboard-filter-menu-list .MuiMenuItem-root:hover,
+html.gold-theme .dashboard-filter-menu .MuiMenuItem-root.Mui-focusVisible,
+html.gold-theme .dashboard-filter-menu-list .MuiMenuItem-root.Mui-focusVisible {
+  background-color: var(--dashboard-select-menu-hover, rgba(74, 67, 52, 0.12)) !important;
+  color: var(--dashboard-select-option-text, #2c2820) !important;
+}
+html.gold-theme .dashboard-filter-menu .MuiMenuItem-root.Mui-selected,
+html.gold-theme .dashboard-filter-menu-list .MuiMenuItem-root.Mui-selected,
+html.gold-theme .dashboard-filter-menu .MuiMenuItem-root.Mui-selected:hover,
+html.gold-theme .dashboard-filter-menu-list .MuiMenuItem-root.Mui-selected:hover,
+html.gold-theme .dashboard-filter-menu .MuiMenuItem-root.Mui-selected.Mui-focusVisible,
+html.gold-theme .dashboard-filter-menu-list .MuiMenuItem-root.Mui-selected.Mui-focusVisible {
+  background-color: var(--dashboard-select-option-selected-bg, #4a4334) !important;
+  color: var(--dashboard-select-option-selected-text, #ffffff) !important;
+}
+/* Gold — override MUI primary-blue on any Select menu (keyboard/mouse highlight) */
+html.gold-theme .MuiPopover-root .MuiMenuItem-root.Mui-selected {
+  background-color: var(--dashboard-select-option-selected-bg, #4a4334) !important;
+  color: var(--dashboard-select-option-selected-text, #ffffff) !important;
+}
+html.gold-theme .MuiPopover-root .MuiMenuItem-root:hover,
+html.gold-theme .MuiPopover-root .MuiMenuItem-root.Mui-focusVisible {
+  background-color: var(--dashboard-select-menu-hover, rgba(74, 67, 52, 0.12)) !important;
+}
+html.gold-theme .MuiPopover-root .MuiMenuItem-root.Mui-selected:hover,
+html.gold-theme .MuiPopover-root .MuiMenuItem-root.Mui-selected.Mui-focusVisible {
+  background-color: var(--dashboard-select-menu-selected-hover, rgba(74, 67, 52, 0.28)) !important;
+  color: var(--dashboard-select-option-selected-text, #ffffff) !important;
+}
+html.gold-theme .dashboard-duration-select.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+html.gold-theme .dashboard-lighting-unit-select.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+html.gold-theme .dashboard-duration-select.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
+html.gold-theme .dashboard-lighting-unit-select.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--dashboard-control-accent, #4a4334) !important;
+}
+html.gold-theme .alerts-pagination-select-menu {
+  background-color: var(--alerts-menu-bg, #faf0d4) !important;
+}
+html.gold-theme .alerts-pagination-select-menu .MuiMenuItem-root {
+  color: var(--alerts-menu-text, #2c2820) !important;
+}
+html.gold-theme .alerts-pagination-select-menu .MuiMenuItem-root:hover {
+  background-color: var(--alerts-menu-hover, #f5e8bc) !important;
+}
+html.gold-theme .alerts-pagination-select-menu .MuiMenuItem-root.Mui-selected {
+  background-color: var(--alerts-menu-selected, rgba(74, 67, 52, 0.18)) !important;
+}
+html.gold-theme .alerts-pagination-select-menu .MuiMenuItem-root.Mui-selected:hover,
+html.gold-theme .alerts-pagination-select-menu .MuiMenuItem-root.Mui-selected.Mui-focusVisible {
+  background-color: var(--dashboard-select-menu-selected-hover, rgba(74, 67, 52, 0.28)) !important;
+  color: var(--dashboard-select-option-selected-text, #ffffff) !important;
+}
+
+html.theme-3-page .alerts-pagination-select-menu {
+  background-color: var(--alerts-menu-bg, #f4f6f9) !important;
+}
+html.theme-3-page .alerts-pagination-select-menu .MuiMenuItem-root {
+  color: var(--alerts-menu-text, #1a2a42) !important;
+}
+html.theme-3-page .alerts-pagination-select-menu .MuiMenuItem-root:hover,
+html.theme-3-page .alerts-pagination-select-menu .MuiMenuItem-root.Mui-focusVisible {
+  background-color: var(--alerts-menu-hover, #e8ecf2) !important;
+  color: var(--alerts-menu-text, #1a2a42) !important;
+}
+html.theme-3-page .alerts-pagination-select-menu .MuiMenuItem-root.Mui-selected,
+html.theme-3-page .alerts-pagination-select-menu .MuiMenuItem-root.Mui-selected:hover,
+html.theme-3-page .alerts-pagination-select-menu .MuiMenuItem-root.Mui-selected.Mui-focusVisible {
+  background-color: var(--dashboard-select-option-selected-bg, #3d4a5c) !important;
+  color: var(--dashboard-select-option-selected-text, #ffffff) !important;
+}
+
+html.theme-4-page .alerts-pagination-select-menu {
+  background-color: var(--alerts-menu-bg, #faf6ef) !important;
+}
+html.theme-4-page .alerts-pagination-select-menu .MuiMenuItem-root {
+  color: var(--alerts-menu-text, #2c2820) !important;
+}
+html.theme-4-page .alerts-pagination-select-menu .MuiMenuItem-root:hover,
+html.theme-4-page .alerts-pagination-select-menu .MuiMenuItem-root.Mui-focusVisible {
+  background-color: var(--alerts-menu-hover, #f0ebe3) !important;
+  color: var(--alerts-menu-text, #2c2820) !important;
+}
+html.theme-4-page .alerts-pagination-select-menu .MuiMenuItem-root.Mui-selected,
+html.theme-4-page .alerts-pagination-select-menu .MuiMenuItem-root.Mui-selected:hover,
+html.theme-4-page .alerts-pagination-select-menu .MuiMenuItem-root.Mui-selected.Mui-focusVisible {
+  background-color: var(--dashboard-select-option-selected-bg, #403a31) !important;
+  color: var(--dashboard-select-option-selected-text, #ffffff) !important;
+}
+
+/* Alerts table footer — page number buttons (selected = dark, others = light) */
+.alerts-page-pagination .MuiPaginationItem-root {
+  background-color: var(--alerts-pagination-item-bg, rgba(255, 255, 255, 0.14)) !important;
+  color: var(--alerts-pagination-item-text, #fff) !important;
+}
+.alerts-page-pagination .MuiPaginationItem-root:hover,
+.alerts-page-pagination .MuiPaginationItem-root.Mui-focusVisible {
+  background-color: var(--alerts-pagination-item-hover-bg, rgba(255, 255, 255, 0.24)) !important;
+}
+.alerts-page-pagination .MuiPaginationItem-root.Mui-selected,
+.alerts-page-pagination .MuiPaginationItem-root.Mui-selected:hover,
+.alerts-page-pagination .MuiPaginationItem-root.Mui-selected.Mui-focusVisible {
+  background-color: var(--alerts-pagination-item-selected-bg, #1c2330) !important;
+  color: var(--alerts-pagination-item-selected-text, #fff) !important;
+  border-color: var(--alerts-pagination-item-selected-bg, #1c2330) !important;
+}
+
+/* Blue + Brown — dashboard filters / selects (same CSS vars pattern as gold) */
+html.theme-3-page .dashboard-alert-type-filter-trigger,
+html.theme-4-page .dashboard-alert-type-filter-trigger,
+html.theme-3-page .dashboard-area-filter-trigger,
+html.theme-4-page .dashboard-area-filter-trigger {
+  background-color: var(--dashboard-alert-filter-bg, #ffffff) !important;
+  border-color: var(--dashboard-alert-filter-border, #c5cdd8) !important;
+  color: var(--dashboard-select-field-text, #1a2a42) !important;
+}
+html.theme-3-page .dashboard-area-filter-trigger .dashboard-area-filter-chevron,
+html.theme-4-page .dashboard-area-filter-trigger .dashboard-area-filter-chevron {
+  color: var(--dashboard-select-field-text, #1a2a42) !important;
+}
+html.theme-3-page .dashboard-area-tree-panel,
+html.theme-3-page .dashboard-area-tree-panel span,
+html.theme-4-page .dashboard-area-tree-panel,
+html.theme-4-page .dashboard-area-tree-panel span,
+html.theme-4-page .dashboard-area-tree-panel div {
+  color: var(--dashboard-select-field-text, #2c2820) !important;
+}
+html.theme-4-page .dashboard-area-tree-panel .dashboard-area-tree-label {
+  color: var(--dashboard-select-field-text, #2c2820) !important;
+}
+html.theme-3-page .dashboard-alert-type-filter-menu,
+html.theme-4-page .dashboard-alert-type-filter-menu {
+  background-color: var(--dashboard-alert-filter-menu-bg, #f4f6f9) !important;
+  border-color: var(--dashboard-alert-filter-border, #c5cdd8) !important;
+}
+html.theme-3-page .dashboard-area-tree-panel input[type="checkbox"],
+html.theme-3-page .dashboard-alert-type-filter-menu input[type="checkbox"],
+html.theme-4-page .dashboard-area-tree-panel input[type="checkbox"],
+html.theme-4-page .dashboard-alert-type-filter-menu input[type="checkbox"] {
+  accent-color: var(--dashboard-control-accent, #3d4a5c);
+}
+html.theme-3-page .dashboard-area-tree-floor-row:hover,
+html.theme-4-page .dashboard-area-tree-floor-row:hover {
+  background-color: var(--dashboard-area-tree-hover-bg, #e8ecf2) !important;
+}
+html.theme-3-page .dashboard-alert-type-filter-item:hover {
+  background-color: var(--dashboard-alert-filter-hover-bg, rgba(61, 74, 92, 0.08)) !important;
+}
+html.theme-4-page .dashboard-alert-type-filter-item:hover {
+  background-color: var(--dashboard-alert-filter-hover-bg, rgba(64, 58, 49, 0.08)) !important;
+}
+html.theme-3-page .dashboard-filter-menu,
+html.theme-4-page .dashboard-filter-menu {
+  background-color: var(--dashboard-select-option-bg, #f4f6f9) !important;
+}
+html.theme-3-page .dashboard-filter-menu .MuiMenuItem-root:hover,
+html.theme-3-page .dashboard-filter-menu-list .MuiMenuItem-root:hover,
+html.theme-3-page .dashboard-filter-menu .MuiMenuItem-root.Mui-focusVisible,
+html.theme-3-page .dashboard-filter-menu-list .MuiMenuItem-root.Mui-focusVisible {
+  background-color: var(--dashboard-select-menu-hover, rgba(61, 74, 92, 0.12)) !important;
+  color: var(--dashboard-select-option-text, #1a2a42) !important;
+}
+html.theme-4-page .dashboard-filter-menu .MuiMenuItem-root:hover,
+html.theme-4-page .dashboard-filter-menu-list .MuiMenuItem-root:hover,
+html.theme-4-page .dashboard-filter-menu .MuiMenuItem-root.Mui-focusVisible,
+html.theme-4-page .dashboard-filter-menu-list .MuiMenuItem-root.Mui-focusVisible {
+  background-color: var(--dashboard-select-menu-hover, rgba(64, 58, 49, 0.12)) !important;
+  color: var(--dashboard-select-option-text, #2c2820) !important;
+}
+html.theme-3-page .dashboard-filter-menu .MuiMenuItem-root.Mui-selected,
+html.theme-3-page .dashboard-filter-menu-list .MuiMenuItem-root.Mui-selected,
+html.theme-3-page .dashboard-filter-menu .MuiMenuItem-root.Mui-selected:hover,
+html.theme-3-page .dashboard-filter-menu-list .MuiMenuItem-root.Mui-selected:hover {
+  background-color: var(--dashboard-select-option-selected-bg, #3d4a5c) !important;
+  color: var(--dashboard-select-option-selected-text, #ffffff) !important;
+}
+html.theme-4-page .dashboard-filter-menu .MuiMenuItem-root.Mui-selected,
+html.theme-4-page .dashboard-filter-menu-list .MuiMenuItem-root.Mui-selected,
+html.theme-4-page .dashboard-filter-menu .MuiMenuItem-root.Mui-selected:hover,
+html.theme-4-page .dashboard-filter-menu-list .MuiMenuItem-root.Mui-selected:hover {
+  background-color: var(--dashboard-select-option-selected-bg, #403a31) !important;
+  color: var(--dashboard-select-option-selected-text, #ffffff) !important;
+}
+html.theme-3-page .MuiPopover-root .MuiMenuItem-root:hover,
+html.theme-3-page .MuiPopover-root .MuiMenuItem-root.Mui-focusVisible {
+  background-color: var(--dashboard-select-menu-hover, rgba(61, 74, 92, 0.12)) !important;
+}
+html.theme-3-page .MuiPopover-root .MuiMenuItem-root.Mui-selected,
+html.theme-3-page .MuiPopover-root .MuiMenuItem-root.Mui-selected:hover,
+html.theme-3-page .MuiPopover-root .MuiMenuItem-root.Mui-selected.Mui-focusVisible {
+  background-color: var(--dashboard-select-option-selected-bg, #3d4a5c) !important;
+  color: var(--dashboard-select-option-selected-text, #ffffff) !important;
+}
+html.theme-4-page .MuiPopover-root .MuiMenuItem-root:hover,
+html.theme-4-page .MuiPopover-root .MuiMenuItem-root.Mui-focusVisible {
+  background-color: var(--dashboard-select-menu-hover, rgba(64, 58, 49, 0.12)) !important;
+  color: var(--dashboard-select-option-text, #2c2820) !important;
+}
+html.theme-4-page .MuiPopover-root .MuiMenuItem-root.Mui-selected,
+html.theme-4-page .MuiPopover-root .MuiMenuItem-root.Mui-selected:hover,
+html.theme-4-page .MuiPopover-root .MuiMenuItem-root.Mui-selected.Mui-focusVisible {
+  background-color: var(--dashboard-select-option-selected-bg, #403a31) !important;
+  color: var(--dashboard-select-option-selected-text, #ffffff) !important;
+}
+html.theme-3-page .dashboard-duration-select.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+html.theme-3-page .dashboard-lighting-unit-select.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+html.theme-3-page .dashboard-duration-select.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
+html.theme-3-page .dashboard-lighting-unit-select.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
+html.theme-4-page .dashboard-duration-select.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+html.theme-4-page .dashboard-lighting-unit-select.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+html.theme-4-page .dashboard-duration-select.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
+html.theme-4-page .dashboard-lighting-unit-select.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--dashboard-control-accent, #3d4a5c) !important;
+}
+
+/* Theme 3 — settings shell on slate gradient page */
+html.theme-3-page .settings-sidebar-item {
+  color: var(--settings-sidebar-text, #1a2a42) !important;
+  font-family: var(--settings-sidebar-font-family, "Roboto", "Helvetica", "Arial", sans-serif) !important;
+  font-size: var(--settings-sidebar-font-size, 14px) !important;
+  font-weight: var(--settings-sidebar-font-weight, 400) !important;
+  font-style: var(--settings-sidebar-font-style, normal) !important;
+  line-height: var(--settings-sidebar-line-height, 20px) !important;
+  letter-spacing: var(--settings-sidebar-letter-spacing, 0.15px) !important;
+}
+html.theme-3-page .settings-sidebar-item[data-active="true"] {
+  background: transparent !important;
+  color: var(--settings-sidebar-active-text, #ffffff) !important;
+  font-weight: var(--settings-sidebar-active-font-weight, 400) !important;
+}
+html.theme-3-page .settings-sidebar-item:hover:not([data-active="true"]) {
+  background-color: var(--settings-sidebar-hover-bg, rgba(61, 74, 92, 0.12)) !important;
+  color: var(--settings-sidebar-text, #1a2a42) !important;
+}
+html.theme-3-page .settings-sidebar-heading {
+  color: var(--settings-sidebar-title-color, #1a2a42) !important;
+  font-family: var(--settings-sidebar-font-family, "Roboto", "Helvetica", "Arial", sans-serif) !important;
+  font-size: var(--settings-sidebar-title-font-size, 24px) !important;
+  font-weight: var(--settings-sidebar-title-font-weight, 600) !important;
+  font-style: normal !important;
+}
+html.theme-3-page .settings-main-outer-panel {
+  background-color: var(--settings-panel-outer-bg, #e8ecf2) !important;
+}
+html.theme-3-page .settings-main-inner-panel {
+  background-color: var(--settings-panel-inner-bg, #f4f6f9) !important;
+}
+html.theme-3-page .settings-main-inner-panel .MuiTypography-root {
+  color: var(--settings-panel-text, #1a2a42);
+}
+
+/* Theme 3 — slate page gradient only (default panels/cards; not gold-theme) */
+html.theme-3-page {
+  background-color: var(--app-background) !important;
+}
+html.theme-3-page body,
+html.theme-3-page #root {
+  background: var(--app-page-background) !important;
+  background-color: var(--app-background) !important;
+  background-attachment: fixed !important;
+}
+html.theme-3-page footer {
+  background-color: var(--footer-background-color, #58687b) !important;
+  background-image: var(--footer-background) !important;
+  background-size: cover !important;
+  background-position: center bottom !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Theme 3 — slate buttons on settings / theme picker (match #58687B palette) */
+html.theme-3-page .settings-sidebar-nav-track .settings-sidebar-item--pill[data-active="true"] {
+  background: transparent !important;
+  color: var(--settings-sidebar-active-text, #ffffff) !important;
+}
+html.theme-3-page .settings-main-inner-panel .MuiButton-contained {
+  background: var(--app-button-background, linear-gradient(90deg, #3D4A5C 0%, #4A586C 25%, #58687B 50%, #4A586C 75%, #3D4A5C 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border: none !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+  transition: transform var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    box-shadow var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    opacity 0.25s ease !important;
+}
+html.theme-3-page .settings-main-inner-panel .MuiButton-contained:hover {
+  background: var(--app-button-background, linear-gradient(90deg, #3D4A5C 0%, #4A586C 25%, #58687B 50%, #4A586C 75%, #3D4A5C 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  opacity: 0.92;
+  filter: none;
+}
+html.theme-3-page .pill-tab:not(.active),
+html.theme-3-page .color-picker-card .pill-tab:not(.active) {
+  background: #ffffff !important;
+  color: var(--settings-panel-text, #1a2a42) !important;
+  border: 1px solid var(--settings-theme-pill-inactive-border, #c5cdd8) !important;
+}
+html.theme-3-page .color-picker-card .pill-tab.active {
+  background: var(--settings-theme-pill-active-bg, linear-gradient(90deg, #3D4A5C 0%, #4A586C 25%, #58687B 50%, #4A586C 75%, #3D4A5C 100%)) !important;
+  background-color: transparent !important;
+  color: var(--settings-theme-pill-active-text, #ffffff) !important;
+  border: 1px solid transparent !important;
+}
+html.theme-3-page .color-picker-card .save-button.MuiButton-root,
+html.theme-3-page .color-picker-card .save-button.MuiButton-root:hover {
+  background: var(--settings-theme-action-button-bg, linear-gradient(90deg, #3D4A5C 0%, #4A586C 25%, #58687B 50%, #4A586C 75%, #3D4A5C 100%)) !important;
+  background-color: transparent !important;
+  color: var(--settings-theme-action-button-text, #ffffff) !important;
+  opacity: 1;
+  filter: none;
+}
+html.theme-3-page .color-picker-card .save-button.MuiButton-root:hover {
+  opacity: 0.92 !important;
+}
+html.theme-3-page .color-picker-card .theme-background-preset-btn.MuiButton-contained {
+  background: var(--settings-theme-pill-active-bg, linear-gradient(90deg, #3D4A5C 0%, #4A586C 25%, #58687B 50%, #4A586C 75%, #3D4A5C 100%)) !important;
+  background-color: transparent !important;
+  color: var(--settings-theme-pill-active-text, #ffffff) !important;
+  border-color: transparent !important;
+}
+html.theme-3-page .color-picker-card .theme-background-preset-btn.MuiButton-outlined {
+  color: var(--settings-panel-text, #1a2a42) !important;
+  border: 1px solid var(--settings-theme-pill-inactive-border, #c5cdd8) !important;
+  background-color: var(--users-input-bg, #ffffff) !important;
+}
+html.theme-3-page .color-picker-card .theme-background-preset-btn.MuiButton-outlined:hover {
+  background-color: var(--users-select-menu-hover, #d6dde8) !important;
+  border: 1px solid var(--home-tab-active-color, #3d4a5c) !important;
+}
+html.theme-3-page .MuiButton-contained:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.theme-background-preset-btn):not(.asd-occupancy-mode-btn),
+html.theme-3-page .MuiButton-containedPrimary:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.theme-background-preset-btn):not(.asd-occupancy-mode-btn) {
+  background: var(--app-button-background, linear-gradient(90deg, #3D4A5C 0%, #4A586C 25%, #58687B 50%, #4A586C 75%, #3D4A5C 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border: none !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+  transition: transform var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    box-shadow var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    opacity 0.25s ease !important;
+}
+html.theme-3-page .MuiButton-contained:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.theme-background-preset-btn):not(.asd-occupancy-mode-btn):hover,
+html.theme-3-page .MuiButton-containedPrimary:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.theme-background-preset-btn):not(.asd-occupancy-mode-btn):hover {
+  background: var(--app-button-background, linear-gradient(90deg, #3D4A5C 0%, #4A586C 25%, #58687B 50%, #4A586C 75%, #3D4A5C 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  opacity: 0.92;
+  filter: none;
+}
+html.theme-3-page .MuiButton-contained.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.theme-background-preset-btn):not(.asd-occupancy-mode-btn),
+html.theme-3-page .MuiButton-containedPrimary.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.theme-background-preset-btn):not(.asd-occupancy-mode-btn) {
+  background: #A6A49A !important;
+  background-color: #A6A49A !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+html.theme-3-page .color-picker-card .pill-tab.active,
+html.theme-3-page .pill-tab.active {
+  background: var(--app-button-background, linear-gradient(90deg, #3D4A5C 0%, #4A586C 25%, #58687B 50%, #4A586C 75%, #3D4A5C 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border-color: transparent !important;
+}
+html.theme-3-page .area-picker-light-dialog .MuiButton-contained,
+html.theme-3-page .area-picker-confirm-dialog .MuiButton-contained,
+html.theme-3-page .settings-theme-dialog .MuiButton-contained:not(.MuiButton-colorError),
+html.theme-3-page .settings-floor-form .MuiButton-contained:not(.MuiButton-colorError) {
+  background: var(--app-button-background, linear-gradient(90deg, #3D4A5C 0%, #4A586C 25%, #58687B 50%, #4A586C 75%, #3D4A5C 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border: none !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+  transition: transform var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    box-shadow var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    opacity 0.25s ease !important;
+}
+html.theme-3-page .area-picker-light-dialog .MuiButton-contained:hover,
+html.theme-3-page .area-picker-confirm-dialog .MuiButton-contained:hover,
+html.theme-3-page .settings-theme-dialog .MuiButton-contained:not(.MuiButton-colorError):hover,
+html.theme-3-page .settings-floor-form .MuiButton-contained:not(.MuiButton-colorError):hover {
+  background: var(--app-button-background, linear-gradient(90deg, #3D4A5C 0%, #4A586C 25%, #58687B 50%, #4A586C 75%, #3D4A5C 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  opacity: 0.92;
+  filter: none;
+}
+
+/* Theme 4 — warm tan page gradient only (default panels/cards; not gold-theme) */
+html.theme-4-page {
+  background-color: var(--app-background) !important;
+}
+html.theme-4-page body,
+html.theme-4-page #root {
+  background: var(--app-page-background) !important;
+  background-color: var(--app-background) !important;
+  background-attachment: fixed !important;
+}
+html.theme-4-page footer {
+  background-color: var(--footer-background-color, #a89773) !important;
+  background-image: var(--footer-background) !important;
+  background-size: cover !important;
+  background-position: center bottom !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Theme 4 — Login / Change Password */
+html.theme-4-page .auth-page {
+  background: var(--app-page-background) !important;
+  background-color: var(--app-background) !important;
+  background-image: none !important;
+}
+html.theme-4-page .auth-page .MuiCard-root {
+  background: var(--auth-card-bg, linear-gradient(90deg, #403A31 0%, #4B453B 25%, #575045 50%, #4B453B 75%, #403A31 100%)) !important;
+  background-color: transparent !important;
+  border-color: var(--auth-card-border, rgba(64, 58, 49, 0.35)) !important;
+}
+html.theme-4-page .auth-page .MuiTypography-root {
+  color: var(--auth-card-text, #ffffff);
+}
+html.theme-4-page .auth-page .MuiSvgIcon-root {
+  color: var(--auth-icon-color, #ffffff) !important;
+}
+/* Password eye sits on white fields — never force card/chrome white icon color */
+html.theme-4-page .auth-page .MuiInputAdornment-root .MuiSvgIcon-root,
+html.theme-4-page .auth-page .auth-password-visibility-btn .MuiSvgIcon-root,
+html.gold-theme .auth-page .MuiInputAdornment-root .MuiSvgIcon-root,
+html.custom-theme .auth-page .MuiInputAdornment-root .MuiSvgIcon-root,
+html.theme-3-page .auth-page .MuiInputAdornment-root .MuiSvgIcon-root,
+.auth-page .MuiInputAdornment-root .MuiSvgIcon-root {
+  color: var(--auth-password-icon-color, #111111) !important;
+}
+html.theme-4-page .auth-page .MuiInputAdornment-root .MuiIconButton-root,
+html.gold-theme .auth-page .MuiInputAdornment-root .MuiIconButton-root,
+html.custom-theme .auth-page .MuiInputAdornment-root .MuiIconButton-root,
+html.theme-3-page .auth-page .MuiInputAdornment-root .MuiIconButton-root,
+.auth-page .MuiInputAdornment-root .MuiIconButton-root {
+  color: var(--auth-password-icon-color, #111111) !important;
+}
+html.theme-4-page .auth-page .MuiButton-contained {
+  background: var(--auth-button-background, var(--app-button-background, linear-gradient(90deg, #403A31 0%, #4B453B 25%, #575045 50%, #4B453B 75%, #403A31 100%))) !important;
+  background-color: transparent !important;
+  color: var(--auth-button-text, #ffffff) !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+}
+html.theme-4-page .auth-page .MuiButton-contained:hover {
+  background: var(--auth-button-background, var(--app-button-background, linear-gradient(90deg, #403A31 0%, #4B453B 25%, #575045 50%, #4B453B 75%, #403A31 100%))) !important;
+  background-color: transparent !important;
+  opacity: 0.92;
+  filter: none;
+}
+
+/* Theme 4 page-background theme: settings sidebar on tan shell (mirror gold-theme) */
+html.theme-4-page .settings-sidebar-item {
+  color: var(--settings-sidebar-text, #2c2820) !important;
+  font-family: var(--settings-sidebar-font-family, "Roboto", "Helvetica", "Arial", sans-serif) !important;
+  font-size: var(--settings-sidebar-font-size, 14px) !important;
+  font-weight: var(--settings-sidebar-font-weight, 400) !important;
+  font-style: var(--settings-sidebar-font-style, normal) !important;
+  line-height: var(--settings-sidebar-line-height, 20px) !important;
+  letter-spacing: var(--settings-sidebar-letter-spacing, 0.15px) !important;
+}
+html.theme-4-page .settings-sidebar-item[data-active="true"] {
+  background: transparent !important;
+  color: var(--settings-sidebar-active-text, #ffffff) !important;
+  font-weight: var(--settings-sidebar-active-font-weight, 400) !important;
+}
+html.theme-4-page .settings-sidebar-item:hover:not([data-active="true"]) {
+  background-color: var(--settings-sidebar-hover-bg, rgba(64, 58, 49, 0.14)) !important;
+  color: var(--settings-sidebar-text, #2c2820) !important;
+}
+html.theme-4-page .settings-sidebar-heading {
+  color: var(--settings-sidebar-title-color, #2c2820) !important;
+  font-family: var(--settings-sidebar-font-family, "Roboto", "Helvetica", "Arial", sans-serif) !important;
+  font-size: var(--settings-sidebar-title-font-size, 24px) !important;
+  font-weight: var(--settings-sidebar-title-font-weight, 600) !important;
+  font-style: normal !important;
+}
+html.theme-4-page .settings-main-outer-panel {
+  background-color: var(--settings-panel-outer-bg, #f0ebe3) !important;
+  border: 1px solid var(--premium-border-subtle, rgba(64, 58, 49, 0.28)) !important;
+  border-radius: var(--premium-radius-lg, 16px) !important;
+}
+html.theme-4-page .settings-main-inner-panel {
+  background-color: var(--settings-panel-inner-bg, #faf6ef) !important;
+  border-radius: var(--premium-radius-lg, 16px) !important;
+  box-shadow: var(--premium-panel-shadow, 0 4px 18px rgba(64, 58, 49, 0.11)) !important;
+}
+html.theme-4-page .settings-main-inner-panel .MuiTypography-root {
+  color: var(--settings-panel-text, #2c2820);
+}
+/* Brown theme — Home Description editor: dark text on light gray editor surface */
+html.theme-4-page .settings-main-inner-panel .ql-toolbar .ql-stroke {
+  stroke: var(--settings-panel-text, #2c2820) !important;
+}
+html.theme-4-page .settings-main-inner-panel .ql-toolbar .ql-fill {
+  fill: var(--settings-panel-text, #2c2820) !important;
+}
+html.theme-4-page .settings-main-inner-panel .ql-toolbar .ql-picker-label {
+  color: var(--settings-panel-text, #2c2820) !important;
+}
+html.theme-4-page .settings-main-inner-panel .ql-container .ql-editor,
+html.theme-4-page .settings-main-inner-panel .ql-container .ql-editor * {
+  color: var(--home-editor-text, var(--settings-panel-text, #2c2820)) !important;
+}
+html.theme-4-page .settings-main-inner-panel .ql-container .ql-editor.ql-blank::before {
+  color: var(--settings-panel-muted-text, rgba(44, 40, 32, 0.6)) !important;
+}
+/* Brown theme — Lutron/Client/Project + dashboard view tabs on dark pill track */
+html.theme-4-page .home-content-type-tabs [role="tab"]:not([aria-selected="true"]) {
+  color: var(--heatmap-tab-inactive-text, #ffffff) !important;
+}
+html.theme-4-page .nav-tab-btn:not(.nav-tab-btn-active) {
+  color: var(--heatmap-tab-inactive-text, #ffffff) !important;
+}
+html.theme-4-page .nav-tab-btn.nav-tab-btn-active {
+  color: var(--heatmap-tab-active-text, #403a31) !important;
+}
+html.theme-4-page .settings-main-inner-panel .MuiButton-contained {
+  background: var(--app-button-background, linear-gradient(90deg, #403A31 0%, #4B453B 25%, #575045 50%, #4B453B 75%, #403A31 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border: none !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+  transition: transform var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    box-shadow var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    opacity 0.25s ease !important;
+}
+html.theme-4-page .settings-main-inner-panel .MuiButton-contained:hover {
+  background: var(--app-button-background, linear-gradient(90deg, #403A31 0%, #4B453B 25%, #575045 50%, #4B453B 75%, #403A31 100%)) !important;
+  background-color: transparent !important;
+  opacity: 0.92;
+  filter: none;
+}
+html.theme-4-page .area-group-container {
+  background-color: var(--area-groups-panel-bg, #faf6ef) !important;
+  border-color: var(--area-groups-border, rgba(64, 58, 49, 0.28)) !important;
+}
+html.theme-4-page .area-group-list-panel {
+  background-color: var(--area-groups-inner-bg, #f0ebe3) !important;
+  border-color: var(--area-groups-border, rgba(64, 58, 49, 0.28)) !important;
+}
+html.theme-4-page .area-group-container .MuiTypography-root {
+  color: var(--settings-panel-text, #2c2820);
+}
+html.theme-4-page .area-group-container .MuiButton-text,
+html.theme-4-page .area-group-container .MuiButton-textPrimary {
+  color: var(--settings-panel-text, #2c2820);
+}
+html.theme-4-page .area-picker-confirm-dialog .MuiDialogTitle-root {
+  color: var(--area-picker-light-dialog-title-color, #ffffff) !important;
+}
+html.theme-4-page .area-picker-confirm-dialog .MuiDialogContentText-root {
+  color: var(--area-picker-confirm-dialog-body-text, rgba(255, 255, 255, 0.92)) !important;
+}
+html.theme-4-page .area-picker-light-dialog .MuiButton-contained,
+html.theme-4-page .area-picker-confirm-dialog .MuiButton-contained,
+html.theme-4-page .settings-theme-dialog .MuiButton-contained:not(.MuiButton-colorError),
+html.theme-4-page .settings-floor-form .MuiButton-contained:not(.MuiButton-colorError) {
+  background: var(--app-button-background, linear-gradient(90deg, #403A31 0%, #4B453B 25%, #575045 50%, #4B453B 75%, #403A31 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border: none !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+  transition: transform var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    box-shadow var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    opacity 0.25s ease !important;
+}
+html.theme-4-page .area-picker-light-dialog .MuiButton-contained:hover,
+html.theme-4-page .area-picker-confirm-dialog .MuiButton-contained:hover,
+html.theme-4-page .settings-theme-dialog .MuiButton-contained:not(.MuiButton-colorError):hover,
+html.theme-4-page .settings-floor-form .MuiButton-contained:not(.MuiButton-colorError):hover {
+  background: var(--app-button-background, linear-gradient(90deg, #403A31 0%, #4B453B 25%, #575045 50%, #4B453B 75%, #403A31 100%)) !important;
+  background-color: transparent !important;
+  opacity: 0.92;
+  filter: none;
+}
+html.theme-4-page .settings-theme-dialog,
+html.theme-4-page .settings-floor-form .MuiDialog-paper.settings-theme-dialog {
+  background: var(--settings-theme-dialog-bg, var(--area-picker-light-dialog-bg, linear-gradient(90deg, #403A31 0%, #4B453B 25%, #575045 50%, #4B453B 75%, #403A31 100%))) !important;
+  background-color: transparent !important;
+  color: var(--area-picker-light-dialog-title-color, #ffffff) !important;
+}
+html.theme-4-page .settings-theme-dialog .MuiDialogTitle-root {
+  color: var(--area-picker-light-dialog-title-color, #ffffff) !important;
+}
+html.theme-4-page .settings-theme-dialog .MuiDialogContent-root .MuiTypography-root {
+  color: var(--area-picker-confirm-dialog-body-text, rgba(255, 255, 255, 0.92)) !important;
+}
+/* Processor picker rows use light chip background — dark labels for contrast */
+html.theme-4-page .settings-theme-dialog .MuiDialogContent-root .MuiListItem-root .MuiTypography-root,
+html.theme-4-page .settings-theme-dialog .MuiDialogContent-root .MuiFormControlLabel-root .MuiTypography-root,
+html.theme-4-page .settings-theme-dialog .MuiDialogContent-root .MuiFormControlLabel-label {
+  color: var(--area-picker-light-dialog-field-text, #2c2820) !important;
+}
+html.theme-4-page .settings-theme-dialog .MuiDialogContent-root .MuiListItem-root .MuiCheckbox-root {
+  color: var(--area-picker-light-dialog-field-text, #2c2820) !important;
+}
+html.theme-4-page .settings-theme-dialog .MuiDialogContent-root .MuiListItem-root .MuiCheckbox-root.Mui-checked {
+  color: var(--home-tab-active-color, #403a31) !important;
+}
+html.theme-4-page .settings-processor-picker-label {
+  color: var(--area-picker-light-dialog-field-text, #2c2820) !important;
+}
+html.theme-4-page .settings-theme-dialog .MuiButton-text,
+html.theme-4-page .settings-theme-dialog .MuiButton-textPrimary {
+  color: var(--area-picker-light-dialog-title-color, #ffffff) !important;
+}
+html.theme-4-page .pill-tab:not(.active),
+html.theme-4-page .color-picker-card .pill-tab:not(.active) {
+  background: #ffffff !important;
+  color: var(--settings-panel-text, #2c2820) !important;
+  border-color: var(--settings-panel-border, rgba(64, 58, 49, 0.28)) !important;
+}
+html.theme-4-page .color-picker-card .pill-tab.active {
+  background: var(--settings-theme-pill-active-bg, linear-gradient(90deg, #403A31 0%, #4B453B 25%, #575045 50%, #4B453B 75%, #403A31 100%)) !important;
+  background-color: transparent !important;
+  color: var(--settings-theme-pill-active-text, #ffffff) !important;
+  border-color: transparent !important;
+}
+html.theme-4-page .color-picker-card .save-button.MuiButton-root,
+html.theme-4-page .color-picker-card .save-button.MuiButton-root:hover {
+  background: var(--settings-theme-action-button-bg, linear-gradient(90deg, #403A31 0%, #4B453B 25%, #575045 50%, #4B453B 75%, #403A31 100%)) !important;
+  background-color: transparent !important;
+  color: var(--settings-theme-action-button-text, #ffffff) !important;
+  opacity: 1;
+  filter: none;
+}
+html.theme-4-page .color-picker-card .save-button.MuiButton-root:hover {
+  opacity: 0.92 !important;
+}
+html.theme-4-page .color-picker-card .theme-background-preset-btn.MuiButton-contained {
+  background: var(--settings-theme-pill-active-bg, linear-gradient(90deg, #403A31 0%, #4B453B 25%, #575045 50%, #4B453B 75%, #403A31 100%)) !important;
+  background-color: transparent !important;
+  color: var(--settings-theme-pill-active-text, #ffffff) !important;
+  border-color: transparent !important;
+}
+html.theme-4-page .color-picker-card .theme-background-preset-btn.MuiButton-outlined {
+  color: var(--settings-panel-text, #2c2820) !important;
+  border-color: var(--settings-panel-border, rgba(64, 58, 49, 0.28)) !important;
+  background-color: var(--users-input-bg, #ffffff) !important;
+}
+html.theme-4-page .color-picker-card .theme-background-preset-btn.MuiButton-outlined:hover {
+  background-color: var(--settings-panel-outer-bg, #f0ebe3) !important;
+  border-color: var(--home-tab-active-color, #403A31) !important;
+}
+html.theme-4-page .settings-main-inner-panel .theme-settings-outlined-btn {
+  color: var(--settings-panel-text, #2c2820) !important;
+  border-color: var(--settings-panel-border, rgba(64, 58, 49, 0.28)) !important;
+  background-color: var(--users-input-bg, #ffffff) !important;
+}
+html.theme-4-page .settings-main-inner-panel .theme-settings-outlined-btn:hover {
+  background-color: var(--settings-panel-outer-bg, #f0ebe3) !important;
+  border-color: var(--home-tab-active-color, #403A31) !important;
+}
+html.theme-4-page .color-picker-card {
+  background: var(--settings-theme-card-bg, #faf6ef) !important;
+}
+
+/* Theme 4 — all primary contained buttons (warm brown gradient, white label) */
+html.theme-4-page .MuiButton-contained:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.asd-occupancy-mode-btn),
+html.theme-4-page .MuiButton-containedPrimary:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.asd-occupancy-mode-btn) {
+  background: var(--app-button-background, linear-gradient(90deg, #403A31 0%, #4B453B 25%, #575045 50%, #4B453B 75%, #403A31 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border: none !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+  transition: transform var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    box-shadow var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    opacity 0.25s ease !important;
+}
+html.theme-4-page .MuiButton-contained:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.asd-occupancy-mode-btn):hover,
+html.theme-4-page .MuiButton-containedPrimary:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.asd-occupancy-mode-btn):hover {
+  background: var(--app-button-background, linear-gradient(90deg, #403A31 0%, #4B453B 25%, #575045 50%, #4B453B 75%, #403A31 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  opacity: 0.92;
+  filter: none;
+}
+html.theme-4-page .MuiButton-contained.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.asd-occupancy-mode-btn),
+html.theme-4-page .MuiButton-containedPrimary.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.asd-occupancy-mode-btn) {
+  /* Same muted grey Create user previously had on cream/Theme 4 */
+  background: #A6A49A !important;
+  background-color: #A6A49A !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+html.theme-4-page .pill-tab.active {
+  background: var(--app-button-background, linear-gradient(90deg, #403A31 0%, #4B453B 25%, #575045 50%, #4B453B 75%, #403A31 100%)) !important;
+  background-color: transparent !important;
+  color: var(--app-button-text, #ffffff) !important;
+  border-color: transparent !important;
+}
+
+/* Theme 4 — Select Area / schedule area picker (brown shell, white title, dark fields) */
+html.theme-4-page .area-picker-light-dialog .MuiDialogTitle-root {
+  color: var(--area-picker-light-dialog-title-color, #ffffff) !important;
+}
+html.theme-4-page .area-picker-light-dialog .MuiSelect-root,
+html.theme-4-page .area-picker-light-dialog .MuiOutlinedInput-root,
+html.theme-4-page .area-picker-light-dialog .MuiInputBase-root {
+  color: var(--area-picker-light-dialog-field-text, #2c2820) !important;
+}
+html.theme-4-page .area-picker-light-dialog .MuiSelect-icon {
+  color: var(--area-picker-light-dialog-field-text, #2c2820) !important;
+}
+html.theme-4-page .area-picker-light-dialog .area-picker-field-surface,
+html.theme-4-page .area-picker-light-dialog .area-picker-field-surface .MuiTypography-root {
+  color: var(--area-picker-light-dialog-field-text, #2c2820) !important;
+}
+
+/* Theme 4 — Activity Report labels/pagination on tan page background */
+html.theme-4-page .activity-report-page,
+html.theme-4-page .activity-report-page .MuiTypography-root,
+html.theme-4-page .activity-report-page .MuiTablePagination-root,
+html.theme-4-page .activity-report-page .MuiIconButton-root {
+  color: var(--activity-report-page-text, #2c2820);
+}
+html.theme-4-page .activity-report-page .MuiTablePagination-selectIcon {
+  color: var(--activity-report-pagination-text, #2c2820);
+}
+html.theme-4-page .activity-report-page .MuiTableCell-root {
+  color: var(--activity-report-table-text, #2c2820) !important;
+}
+html.theme-4-page .activity-report-page .MuiTableRow-hover:hover .MuiTableCell-root {
+  color: var(--activity-report-table-text, #2c2820) !important;
+}
+html.theme-4-page .activity-report-page .MuiOutlinedInput-root,
+html.theme-4-page .activity-report-page .MuiFilledInput-root,
+html.theme-4-page .activity-report-page .MuiInputBase-root {
+  background-color: var(--activity-report-filter-field-bg, #f0ebe3) !important;
+}
+html.theme-4-page .activity-report-page .MuiOutlinedInput-root fieldset {
+  border-color: var(--activity-report-filter-field-border, rgba(64, 58, 49, 0.28)) !important;
+}
+
+/* Select Area (Add Location): no page-dimming overlay behind the dialog */
+.MuiModal-root.select-area-dialog-root .MuiBackdrop-root {
+  background-color: transparent !important;
+}
+
+/* Area group pages specific styles */
+.area-group-container {
+  min-height: calc(100vh - 120px) !important;
+  max-height: none !important;
+  width: calc(100% - 16px) !important;
+  overflow: visible !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  margin: 8px !important;
+  margin-right: 8px !important;
+}
+
+/* Responsive adjustments for area group containers */
+@media (max-width: 1440px) {
+  .area-group-container {
+    min-height: calc(100vh - 120px) !important;
+    overflow: visible !important;
+  }
+}
+
+/* Laptop size (1280x720) adjustments for area group containers */
+@media (min-width: 1280px) and (max-width: 1365px) {
+  .area-group-container {
+    min-height: calc(100vh - 140px) !important;
+    overflow: visible !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .area-group-container {
+    min-height: calc(100vh - 120px) !important;
+    overflow: visible !important;
+  }
+}
+
+.area-group-scrollable {
+  max-height: calc(100vh - 340px) !important;
+  overflow-y: auto !important;
+}
+
+/* Prevent scroll on area group pages */
+.area-group-container * {
+  overflow: hidden !important;
+  overflow-y: hidden !important;
+  overflow-x: hidden !important;
+}
+
+.area-group-container .area-group-scrollable {
+  overflow: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Outlined TextField floating labels sit above the input — do not clip them */
+.area-group-container .MuiTextField-root,
+.area-group-container .MuiTextField-root *,
+.area-group-container .MuiFormControl-root,
+.area-group-container .MuiFormControl-root *,
+.area-group-container .MuiInputLabel-root,
+.area-group-container .MuiFormLabel-root,
+.area-group-container *:has(> .MuiTextField-root),
+.area-group-container *:has(> .MuiFormControl-root) {
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+}
+
+/* Area group pages: readable text on light panel / inner list surfaces */
+.area-group-container .MuiTypography-root,
+.area-group-container .MuiButton-root:not(.MuiButton-contained) {
+  color: var(--area-group-on-surface-text, var(--settings-panel-text, rgba(0, 0, 0, 0.87))) !important;
+}
+
+.area-group-list-panel .MuiTypography-root,
+.area-group-list-panel .MuiListItemText-primary {
+  color: var(
+    --area-group-inner-text,
+    var(--users-input-text, var(--settings-panel-text, rgba(0, 0, 0, 0.87)))
+  ) !important;
+}
+
+.area-group-container .MuiOutlinedInput-root,
+.area-group-container .MuiFilledInput-root {
+  background-color: var(--users-input-bg, #ffffff) !important;
+}
+
+.area-group-container .MuiOutlinedInput-input,
+.area-group-container .MuiInputBase-input,
+.area-group-container .MuiFilledInput-input,
+.area-group-container .MuiSelect-select {
+  color: var(
+    --area-group-inner-text,
+    var(--users-input-text, rgba(0, 0, 0, 0.87))
+  ) !important;
+  -webkit-text-fill-color: var(
+    --area-group-inner-text,
+    var(--users-input-text, rgba(0, 0, 0, 0.87))
+  ) !important;
+}
+
+.area-group-container .MuiOutlinedInput-notchedOutline {
+  border-color: var(--users-border, rgba(0, 0, 0, 0.23)) !important;
+}
+
+/* Higher specificity than `.area-group-container *` so the location list can scroll */
+.area-group-container .area-group-list-panel,
+.area-group-container .area-group-scrollable {
+  overflow: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+/* Keep Cancel/Save (and update actions) above the fixed footer hit area */
+.area-group-container .area-group-actions {
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 2 !important;
+  padding-bottom: 28px !important;
+  pointer-events: auto !important;
+}
+
+.area-group-container .area-group-actions * {
+  overflow: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Settings and Lutron website pages specific styles */
+.settings-container {
+  min-height: calc(100vh - 180px) !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: visible !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+}
+
+/* Responsive adjustments for settings containers */
+@media (max-width: 1440px) {
+  .settings-container {
+    min-height: calc(100vh - 160px) !important;
+    overflow: visible !important;
+  }
+}
+
+/* Laptop size (1280x720) adjustments for settings containers */
+@media (min-width: 1280px) and (max-width: 1365px) {
+  .settings-container {
+    min-height: calc(100vh - 150px) !important;
+    overflow: visible !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .settings-container {
+    min-height: calc(100vh - 140px) !important;
+    overflow: visible !important;
+  }
+}
+
+.lutron-website-container {
+  min-height: calc(100vh - 200px) !important;
+  max-height: calc(100vh - 200px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  height: calc(100vh - 200px) !important;
+}
+
+.lutron-home-hero {
+  min-height: 42vh !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Responsive adjustments for lutron website containers */
+@media (max-width: 1440px) {
+  .lutron-website-container {
+    min-height: calc(100vh - 180px) !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+}
+
+/* Laptop size (1280x720) adjustments for lutron website containers */
+@media (min-width: 1280px) and (max-width: 1365px) {
+  .lutron-website-container {
+    min-height: calc(100vh - 170px) !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .lutron-website-container {
+    min-height: calc(100vh - 160px) !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+}
+
+.help-container {
+  min-height: calc(100vh - 180px) !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: visible !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+}
+
+/* Responsive adjustments for help containers */
+@media (max-width: 1440px) {
+  .help-container {
+    min-height: calc(100vh - 160px) !important;
+    overflow: visible !important;
+  }
+}
+
+/* Laptop size (1280x720) adjustments for help containers */
+@media (min-width: 1280px) and (max-width: 1365px) {
+  .help-container {
+    min-height: calc(100vh - 150px) !important;
+    overflow: visible !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .help-container {
+    min-height: calc(100vh - 140px) !important;
+    overflow: visible !important;
+  }
+}
+
+/* Allow natural scrolling for child elements */
+.settings-container *,
+.lutron-website-container *,
+.help-container * {
+  overflow: visible !important;
+}
+
+/* Allow natural scrolling on lutron website pages */
+.settings-container,
+.help-container {
+  overflow: visible !important;
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
+}
+
+/* Allow internal scroll for content areas within settings - default for 1440px+ */
+.project-content-scrollable,
+.client-content-scrollable,
+.lutron-content-scrollable {
+  overflow: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  /* Hide scrollbars for all browsers */
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+/* Hide scrollbars for webkit browsers (Chrome, Safari) at 1440px+ */
+.project-content-scrollable::-webkit-scrollbar,
+.client-content-scrollable::-webkit-scrollbar,
+.lutron-content-scrollable::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Hide scrollbars for all child elements at 1440px+ */
+.project-content-scrollable *,
+.client-content-scrollable *,
+.lutron-content-scrollable * {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+.project-content-scrollable *::-webkit-scrollbar,
+.client-content-scrollable *::-webkit-scrollbar,
+.lutron-content-scrollable *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Laptop size (1280x720) - allow scrolling for content areas */
+@media (min-width: 1280px) and (max-width: 1365px) {
+  .project-content-scrollable,
+  .client-content-scrollable,
+  .lutron-content-scrollable {
+    overflow: auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    max-height: calc(100vh - 250px) !important;
+  }
+  
+  .settings-container {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  
+  html {
+    overflow-y: auto !important;
+  }
+  body, #root {
+    overflow-y: visible !important;
+  }
+}
+
+/* For screens below 1440px, disable internal scroll and use main container scroll */
+@media (max-width: 1439px) {
+  .project-content-scrollable,
+  .client-content-scrollable,
+  .lutron-content-scrollable {
+    overflow: visible !important;
+    overflow-y: visible !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  
+  /* Also disable scroll on main containers for smaller screens */
+  .settings-container {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  
+  /* Disable scroll on all nested containers for smaller screens */
+  .settings-container * {
+    overflow: visible !important;
+    overflow-y: visible !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Re-enable scroll only for the main page */
+  html {
+    overflow-y: auto !important;
+  }
+  body, #root {
+    overflow-y: visible !important;
+  }
+}
+
+.settings-container *:not(.project-content-scrollable):not(.client-content-scrollable):not(.lutron-content-scrollable),
+.help-container *:not(.project-content-scrollable):not(.client-content-scrollable):not(.lutron-content-scrollable) {
+  overflow: visible !important;
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
+}
+
+/* Ensure settings pages align properly with footer like other pages */
+.settings-container,
+.help-container {
+  position: relative !important;
+  box-sizing: border-box !important;
+}
+
+/* Help page — URL field (overrides global MuiFilledInput tan background) */
+.help-container .help-url-input .MuiOutlinedInput-root,
+.help-container .help-url-input .MuiFilledInput-root {
+  background-color: var(--users-chip-bg, #d6dde8) !important;
+}
+.help-container .help-url-input .MuiOutlinedInput-root:hover,
+.help-container .help-url-input .MuiFilledInput-root:hover {
+  background-color: var(--users-chip-bg, #d6dde8) !important;
+}
+.help-container .help-url-input .MuiOutlinedInput-root.Mui-focused,
+.help-container .help-url-input .MuiFilledInput-root.Mui-focused {
+  background-color: var(--users-input-bg, #ffffff) !important;
+}
+.help-container .help-url-input .MuiFilledInput-root::before,
+.help-container .help-url-input .MuiFilledInput-root::after {
+  border-bottom: none !important;
+}
+
+/* Specific styles for Lutron page - NO scrolling for 1440px+ screens */
+body.lutron-page {
+  overflow: hidden !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+}
+
+#root.lutron-page {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+}
+
+/* For screens below 1440px ONLY, allow scrolling */
+@media (max-width: 1439px) {
+  body.lutron-page {
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+  }
+  
+  #root.lutron-page {
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+  }
+  
+  /* Ensure Lutron website container allows scrolling on smaller screens */
+  .lutron-website-container {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
+/* For screens 1440px and above, ensure NO scrolling */
+@media (min-width: 1440px) {
+  body.lutron-page {
+    overflow: hidden !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
+  
+  #root.lutron-page {
+    overflow: hidden !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
+  
+  /* Ensure Lutron website container has fixed height on larger screens */
+  .lutron-website-container {
+    height: calc(100vh - 200px) !important;
+    max-height: calc(100vh - 200px) !important;
+    overflow: hidden !important;
+  }
+  
+  /* Ensure heatmap page has no scroll on large screens */
+  body:has(.heatmap-container) {
+    overflow: hidden !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
+  
+  #root:has(.heatmap-container) {
+    overflow: hidden !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
+}
+
+/* Specific styles for Schedule page to prevent scrollbars */
+body.schedule-page {
+  overflow: hidden !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+}
+
+#root.schedule-page {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+}
+
+.schedule-container {
+  min-height: calc(100vh - 180px) !important;
+  max-height: none !important;
+  overflow: visible !important;
+  width: 100% !important;
+}
+
+/* Gold theme — Schedule: native filter dropdown on gold page */
+html.gold-theme select.schedule-filter-select {
+  background-color: var(--schedule-select-bg, #faf0d4) !important;
+  color: var(--schedule-select-text, #2c2820) !important;
+  border-color: var(--schedule-panel-border, rgba(74, 67, 52, 0.28)) !important;
+  accent-color: #4a4334;
+}
+html.gold-theme select.schedule-filter-select option {
+  background-color: #faf0d4;
+  color: #2c2820;
+}
+
+/* Gold theme — Schedule: replace default blue accents with warm palette */
+html.gold-theme .schedule-filter-select {
+  background-color: var(--schedule-select-bg, #faf0d4) !important;
+  color: var(--schedule-select-text, #2c2820) !important;
+  border-color: var(--schedule-panel-border, rgba(74, 67, 52, 0.28)) !important;
+  accent-color: #4a4334;
+}
+html.gold-theme .schedule-filter-select option {
+  background-color: #faf0d4;
+  color: #2c2820;
+}
+html.gold-theme .schedule-filter-menu {
+  background-color: var(--schedule-select-menu-bg, #faf0d4) !important;
+}
+html.gold-theme .schedule-filter-menu .MuiMenuItem-root {
+  color: var(--schedule-select-menu-text, #2c2820) !important;
+}
+html.gold-theme .schedule-filter-menu .MuiMenuItem-root:hover,
+html.gold-theme .schedule-filter-menu-list .MuiMenuItem-root:hover,
+html.gold-theme .schedule-filter-menu .MuiMenuItem-root.Mui-focusVisible,
+html.gold-theme .schedule-filter-menu-list .MuiMenuItem-root.Mui-focusVisible {
+  background-color: var(--schedule-select-menu-hover, rgba(74, 67, 52, 0.12)) !important;
+  color: var(--schedule-select-menu-text, #2c2820) !important;
+}
+html.gold-theme .schedule-filter-menu .MuiMenuItem-root.Mui-selected,
+html.gold-theme .schedule-filter-menu-list .MuiMenuItem-root.Mui-selected,
+html.gold-theme .schedule-filter-menu .MuiMenuItem-root.Mui-selected:hover,
+html.gold-theme .schedule-filter-menu-list .MuiMenuItem-root.Mui-selected:hover,
+html.gold-theme .schedule-filter-menu .MuiMenuItem-root.Mui-selected.Mui-focusVisible,
+html.gold-theme .schedule-filter-menu-list .MuiMenuItem-root.Mui-selected.Mui-focusVisible {
+  background-color: var(--schedule-modal-item-selected-bg, #4a4334) !important;
+  color: var(--schedule-modal-item-selected-text, #ffffff) !important;
+}
+html.gold-theme .schedule-filter-select.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+html.gold-theme .schedule-filter-select.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--home-tab-active-color, #3d3629) !important;
+}
+
+/* Theme 3 — Schedule: native filter dropdown */
+html.theme-3-page select.schedule-filter-select {
+  background-color: var(--schedule-select-bg, #e8ecf2) !important;
+  color: var(--schedule-select-text, #1a2a42) !important;
+  border-color: var(--schedule-panel-border, #c5cdd8) !important;
+  accent-color: #3d4a5c;
+}
+html.theme-3-page select.schedule-filter-select option {
+  background-color: #e8ecf2;
+  color: #1a2a42;
+}
+
+/* Theme 4 (Brown) — Schedule: native filter dropdown */
+html.theme-4-page select.schedule-filter-select {
+  background-color: var(--schedule-select-bg, #faf6ef) !important;
+  color: var(--schedule-select-text, #2c2820) !important;
+  border-color: var(--schedule-panel-border, rgba(64, 58, 49, 0.28)) !important;
+  accent-color: #403a31;
+}
+html.theme-4-page select.schedule-filter-select option {
+  background-color: #faf6ef;
+  color: #2c2820;
+}
+
+/* Theme 4 (Brown) — Schedule: replace default blue accents with warm palette */
+html.theme-4-page .schedule-filter-select {
+  background-color: var(--schedule-select-bg, #faf6ef) !important;
+  color: var(--schedule-select-text, #2c2820) !important;
+  border-color: var(--schedule-panel-border, rgba(64, 58, 49, 0.28)) !important;
+  accent-color: #403a31;
+}
+html.theme-4-page .schedule-filter-select option {
+  background-color: #faf6ef;
+  color: #2c2820;
+}
+html.theme-4-page .schedule-filter-menu {
+  background-color: var(--schedule-select-menu-bg, #faf6ef) !important;
+}
+html.theme-4-page .schedule-filter-menu .MuiMenuItem-root {
+  color: var(--schedule-select-menu-text, #2c2820) !important;
+}
+html.theme-4-page .schedule-filter-menu .MuiMenuItem-root:hover {
+  background-color: var(--schedule-select-menu-hover, rgba(64, 58, 49, 0.12)) !important;
+}
+html.theme-4-page .schedule-filter-menu .MuiMenuItem-root:hover,
+html.theme-4-page .schedule-filter-menu-list .MuiMenuItem-root:hover,
+html.theme-4-page .schedule-filter-menu .MuiMenuItem-root.Mui-focusVisible,
+html.theme-4-page .schedule-filter-menu-list .MuiMenuItem-root.Mui-focusVisible {
+  background-color: var(--schedule-select-menu-hover, rgba(64, 58, 49, 0.12)) !important;
+  color: var(--schedule-select-menu-text, #2c2820) !important;
+}
+html.theme-4-page .schedule-filter-menu .MuiMenuItem-root.Mui-selected,
+html.theme-4-page .schedule-filter-menu-list .MuiMenuItem-root.Mui-selected,
+html.theme-4-page .schedule-filter-menu .MuiMenuItem-root.Mui-selected:hover,
+html.theme-4-page .schedule-filter-menu-list .MuiMenuItem-root.Mui-selected:hover,
+html.theme-4-page .schedule-filter-menu .MuiMenuItem-root.Mui-selected.Mui-focusVisible,
+html.theme-4-page .schedule-filter-menu-list .MuiMenuItem-root.Mui-selected.Mui-focusVisible {
+  background-color: var(--schedule-modal-item-selected-bg, #403a31) !important;
+  color: var(--schedule-modal-item-selected-text, #ffffff) !important;
+}
+html.theme-4-page .schedule-filter-select.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+html.theme-4-page .schedule-filter-select.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--home-tab-active-color, #403a31) !important;
+}
+
+/* Theme 3 (Blue) — Schedule filter MUI menu */
+html.theme-3-page .schedule-filter-menu {
+  background-color: var(--schedule-select-menu-bg, #e8ecf2) !important;
+}
+html.theme-3-page .schedule-filter-menu .MuiMenuItem-root {
+  color: var(--schedule-select-menu-text, #1a2a42) !important;
+}
+html.theme-3-page .schedule-filter-menu .MuiMenuItem-root:hover,
+html.theme-3-page .schedule-filter-menu-list .MuiMenuItem-root:hover,
+html.theme-3-page .schedule-filter-menu .MuiMenuItem-root.Mui-focusVisible,
+html.theme-3-page .schedule-filter-menu-list .MuiMenuItem-root.Mui-focusVisible {
+  background-color: var(--schedule-select-menu-hover, rgba(61, 74, 92, 0.16)) !important;
+  color: var(--schedule-select-menu-text, #1a2a42) !important;
+}
+html.theme-3-page .schedule-filter-menu .MuiMenuItem-root.Mui-selected,
+html.theme-3-page .schedule-filter-menu-list .MuiMenuItem-root.Mui-selected,
+html.theme-3-page .schedule-filter-menu .MuiMenuItem-root.Mui-selected:hover,
+html.theme-3-page .schedule-filter-menu-list .MuiMenuItem-root.Mui-selected:hover,
+html.theme-3-page .schedule-filter-menu .MuiMenuItem-root.Mui-selected.Mui-focusVisible,
+html.theme-3-page .schedule-filter-menu-list .MuiMenuItem-root.Mui-selected.Mui-focusVisible {
+  background-color: var(--schedule-modal-item-selected-bg, #3d4a5c) !important;
+  color: var(--schedule-modal-item-selected-text, #ffffff) !important;
+}
+html.theme-3-page .schedule-filter-select.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+html.theme-3-page .schedule-filter-select.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--home-tab-active-color, #3d4a5c) !important;
+}
+
+/* Custom hex themes — Schedule filter MUI menu uses accent CSS vars */
+html.custom-theme .schedule-filter-menu {
+  background-color: var(--schedule-select-menu-bg, #ffffff) !important;
+}
+html.custom-theme .schedule-filter-menu .MuiMenuItem-root {
+  color: var(--schedule-select-menu-text, #1c2330) !important;
+}
+html.custom-theme .schedule-filter-menu .MuiMenuItem-root:hover,
+html.custom-theme .schedule-filter-menu-list .MuiMenuItem-root:hover,
+html.custom-theme .schedule-filter-menu .MuiMenuItem-root.Mui-focusVisible,
+html.custom-theme .schedule-filter-menu-list .MuiMenuItem-root.Mui-focusVisible {
+  background-color: var(--schedule-select-menu-hover, rgba(61, 74, 92, 0.16)) !important;
+  color: var(--schedule-select-menu-text, #1c2330) !important;
+}
+html.custom-theme .schedule-filter-menu .MuiMenuItem-root.Mui-selected,
+html.custom-theme .schedule-filter-menu-list .MuiMenuItem-root.Mui-selected,
+html.custom-theme .schedule-filter-menu .MuiMenuItem-root.Mui-selected:hover,
+html.custom-theme .schedule-filter-menu-list .MuiMenuItem-root.Mui-selected:hover,
+html.custom-theme .schedule-filter-menu .MuiMenuItem-root.Mui-selected.Mui-focusVisible,
+html.custom-theme .schedule-filter-menu-list .MuiMenuItem-root.Mui-selected.Mui-focusVisible {
+  background-color: var(--schedule-modal-item-selected-bg, var(--app-button, #3d4a5c)) !important;
+  color: var(--schedule-modal-item-selected-text, #ffffff) !important;
+}
+html.custom-theme .schedule-filter-select.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+html.custom-theme .schedule-filter-select.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--home-tab-active-color, var(--app-button, #3d4a5c)) !important;
+}
+
+/* Theme 4 — Quick Controls modals (On/Off labels on dark brown panels) */
+html.theme-4-page .quick-control-modal {
+  color: var(--schedule-modal-body-text, #ffffff);
+}
+html.theme-4-page .quick-control-modal .qc-modal-label,
+html.theme-4-page .quick-control-modal label {
+  color: var(--schedule-modal-body-text, #ffffff) !important;
+}
+
+/* Premium chrome — Gold / Blue (Theme 3) / Brown (Theme 4) presets */
+html.gold-theme .color-picker-card,
+html.custom-theme .color-picker-card,
+html.theme-3-page .color-picker-card,
+html.theme-4-page .color-picker-card {
+  border-radius: var(--premium-radius-md, 12px) !important;
+  box-shadow: var(--premium-panel-shadow, 0 4px 18px rgba(0, 0, 0, 0.08)) !important;
+  border: 1px solid var(--premium-border-subtle, transparent) !important;
+}
+html.theme-3-page .settings-main-outer-panel {
+  border: 1px solid var(--premium-border-subtle, #c5cdd8) !important;
+  border-radius: var(--premium-radius-lg, 16px) !important;
+}
+html.theme-3-page .settings-main-inner-panel {
+  border-radius: var(--premium-radius-lg, 16px) !important;
+  box-shadow: var(--premium-panel-shadow, 0 4px 18px rgba(45, 58, 74, 0.12)) !important;
+}
+html.theme-4-page .settings-main-outer-panel {
+  border: 1px solid var(--premium-border-subtle, rgba(64, 58, 49, 0.28)) !important;
+  border-radius: var(--premium-radius-lg, 16px) !important;
+}
+html.theme-4-page .settings-main-inner-panel {
+  border-radius: var(--premium-radius-lg, 16px) !important;
+  box-shadow: var(--premium-panel-shadow, 0 4px 18px rgba(64, 58, 49, 0.11)) !important;
+}
+html.gold-theme .settings-theme-dialog .MuiDialog-paper,
+html.custom-theme .settings-theme-dialog .MuiDialog-paper,
+html.theme-3-page .settings-theme-dialog .MuiDialog-paper,
+html.theme-4-page .settings-theme-dialog .MuiDialog-paper {
+  border-radius: var(--premium-radius-lg, 16px) !important;
+  box-shadow: var(--premium-dialog-shadow, 0 10px 28px rgba(0, 0, 0, 0.22)) !important;
+}
+html.gold-theme .MuiButton-contained:not(.MuiButton-colorError):hover,
+html.theme-3-page .MuiButton-contained:not(.MuiButton-colorError):hover,
+html.theme-4-page .MuiButton-contained:not(.MuiButton-colorError):hover {
+  box-shadow: var(--premium-button-shadow-hover, var(--premium-button-shadow, none)) !important;
+  transform: translateY(-1px);
+}
+@media (prefers-reduced-motion: reduce) {
+  html.gold-theme .MuiButton-contained:hover,
+  html.theme-3-page .MuiButton-contained:hover,
+  html.theme-4-page .MuiButton-contained:hover {
+    transform: none;
+  }
+}
+
+/* Responsive adjustments for schedule containers */
+@media (max-width: 1440px) {
+  .schedule-container {
+    min-height: calc(100vh - 160px) !important;
+    overflow: visible !important;
+  }
+}
+
+/* Laptop size (1280x720) adjustments for schedule containers */
+@media (min-width: 1280px) and (max-width: 1365px) {
+  .schedule-container {
+    min-height: calc(100vh - 150px) !important;
+    overflow: visible !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .schedule-container {
+    min-height: calc(100vh - 140px) !important;
+    overflow: visible !important;
+  }
+}
+
+/* Schedule add event — fixed viewport with internal locations panel scroll (advanced only) */
+.main-layout-page-shell:has(.schedule-form-shell:not(.schedule-form-shell--details)) {
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px) !important;
+  max-height: calc(100vh - 200px) !important;
+  min-height: calc(100vh - 200px) !important;
+}
+
+.main-layout-page-shell .schedule-form-shell:not(.schedule-form-shell--details) {
+  flex: 1;
+  min-height: 0;
+  height: 100% !important;
+  max-height: 100% !important;
+  box-sizing: border-box;
+}
+
+/* Schedule details — extra vertical room for trigger row above the form (advanced only) */
+.main-layout-page-shell:has(.schedule-form-shell--details) {
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 160px) !important;
+  max-height: calc(100vh - 160px) !important;
+  min-height: calc(100vh - 160px) !important;
+}
+
+.main-layout-page-shell .schedule-form-shell--details {
+  flex: 1;
+  min-height: 0;
+  height: 100% !important;
+  max-height: 100% !important;
+  box-sizing: border-box;
+}
+
+.schedule-form-shell .schedule-form-right-panel {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  max-width: none;
+}
+
+.schedule-form-shell .schedule-form-left-panel-scroll-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  align-self: stretch;
+  overflow: hidden;
+}
+
+/* Add Event (advanced) — hide native scrollbar; use ▼ scroll affordance */
+.schedule-form-shell:not(.schedule-form-shell--details) .schedule-form-left-panel {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.schedule-form-shell:not(.schedule-form-shell--details) .schedule-form-left-panel::-webkit-scrollbar {
+  display: none;
+}
+
+/* Schedule Details (advanced) — stretch + scroll without native bar */
+.schedule-form-shell--details .schedule-form-left-panel {
+  align-self: stretch;
+  flex-shrink: 0;
+  min-height: 0;
+  max-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.schedule-form-shell--details .schedule-form-left-panel::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .main-layout-page-shell:has(.schedule-form-shell:not(.schedule-form-shell--details)),
+  .main-layout-page-shell:has(.schedule-form-shell--details) {
+    overflow-y: auto !important;
+  }
+
+  .main-layout-page-shell .schedule-form-shell:not(.schedule-form-shell--details),
+  .main-layout-page-shell .schedule-form-shell--details {
+    min-height: auto;
+    max-height: none;
+    height: auto;
+  }
+}
+
+.main-layout-page-shell:has(.quick-control-details-shell),
+.main-layout-page-shell:has(.quick-control-create-shell) {
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px) !important;
+  max-height: calc(100vh - 200px) !important;
+  min-height: calc(100vh - 200px) !important;
+}
+
+.main-layout-page-shell .quick-control-details-shell,
+.main-layout-page-shell .quick-control-create-shell {
+  flex: 1;
+  min-height: 0;
+  height: 100% !important;
+  max-height: 100% !important;
+  box-sizing: border-box;
+}
+
+/* Quick Controls list cards — visible outline on light/gold page backgrounds. */
+button.quick-control-list-card {
+  border: 1.5px solid var(--app-button, #2c2820) !important;
+  box-sizing: border-box !important;
+  background: #ffffff !important;
+}
+
+.quick-control-details-list-scroll-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (max-width: 899px) {
+  .main-layout-page-shell:has(.quick-control-details-shell),
+  .main-layout-page-shell:has(.quick-control-create-shell) {
+    overflow-y: auto !important;
+  }
+
+  .main-layout-page-shell .quick-control-details-shell,
+  .main-layout-page-shell .quick-control-create-shell {
+    min-height: auto;
+    max-height: none;
+    height: auto;
+  }
+}
+
+.quick-control-details-list-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.quick-control-details-list-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.quick-control-details-scroll-btn {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  border: none;
+  background: transparent;
+  color: var(--schedule-panel-label, #1a2a42);
+  font-size: 12px;
+  line-height: 1;
+  padding: 4px 12px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.quick-control-details-scroll-btn:hover {
+  opacity: 0.75;
+}
+
+.quick-control-details-scroll-btn:focus-visible {
+  outline: 2px solid var(--app-button, #2c2820);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.quick-control-details-action-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  flex-shrink: 0;
+  padding-top: 12px;
+  padding-bottom: 4px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 899px) {
+  .quick-control-details-action-bar {
+    flex-wrap: wrap;
+  }
+}
+
+/* ── App-wide responsive layout (all pages) ─────────────────────────────── */
+
+/* Page shells: allow scroll on phones/tablets instead of clipping content */
+@media (max-width: 899px) {
+  .main-layout-page-shell {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  body.schedule-page {
+    overflow-y: auto !important;
+  }
+}
+
+/* Settings: sticky sidebar (full tab list), content pane scrolls when long. */
+.settings-layout-root {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  min-height: auto !important;
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+  color: var(--settings-panel-text, #1c2330);
+}
+
+.settings-main-inner-panel {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 0;
+  max-height: calc(100dvh - 280px);
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  color: var(--settings-panel-text, #1c2330);
+}
+
+@media (min-width: 900px) {
+  .settings-layout-root,
+  .MuiGrid-container.settings-layout-root {
+    align-items: flex-start !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .settings-layout-root [data-testid="settings-sidebar-nav"],
+  .settings-layout-root .settings-sidebar-column {
+    position: sticky !important;
+    top: 20px !important;
+    align-self: flex-start !important;
+    max-height: none !important;
+    overflow: visible !important;
+    z-index: 2;
+  }
+
+  .settings-layout-root > .settings-main-outer-panel {
+    max-height: none !important;
+    overflow: visible !important;
+    align-self: flex-start !important;
+  }
+
+  .settings-layout-root .settings-main-inner-panel {
+    max-height: calc(100dvh - 280px) !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+}
+
+@media (max-width: 899px) {
+  .settings-main-inner-panel {
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
+/* Avoid a second scrollbar inside Home Lutron/Client/Project cards. */
+.settings-main-inner-panel .lutron-content-scrollable,
+.settings-main-inner-panel .client-content-scrollable,
+.settings-main-inner-panel .project-content-scrollable {
+  overflow: visible !important;
+  overflow-y: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+.settings-main-inner-panel .MuiTypography-root {
+  color: var(--settings-panel-text, #1c2330);
+}
+
+/* FOFP empty canvas: panel typography rules force dark text; override for contrast. */
+.settings-main-inner-panel .fofp-viewer-empty-message .MuiTypography-root,
+html.gold-theme .settings-main-inner-panel .fofp-viewer-empty-message .MuiTypography-root,
+html.custom-theme .settings-main-inner-panel .fofp-viewer-empty-message .MuiTypography-root,
+html.theme-3-page .settings-main-inner-panel .fofp-viewer-empty-message .MuiTypography-root,
+html.theme-4-page .settings-main-inner-panel .fofp-viewer-empty-message .MuiTypography-root {
+  color: #e2e8f0 !important;
+}
+
+.settings-main-inner-panel .fofp-viewer-empty-message.fofp-viewer-empty-on-light .MuiTypography-root,
+html.gold-theme .settings-main-inner-panel .fofp-viewer-empty-message.fofp-viewer-empty-on-light .MuiTypography-root,
+html.custom-theme .settings-main-inner-panel .fofp-viewer-empty-message.fofp-viewer-empty-on-light .MuiTypography-root,
+html.theme-3-page .settings-main-inner-panel .fofp-viewer-empty-message.fofp-viewer-empty-on-light .MuiTypography-root,
+html.theme-4-page .settings-main-inner-panel .fofp-viewer-empty-message.fofp-viewer-empty-on-light .MuiTypography-root {
+  color: #0f172a !important;
+}
+
+.settings-main-inner-panel .MuiTableCell-root {
+  color: var(--settings-panel-text, #1c2330) !important;
+}
+
+.settings-main-inner-panel .MuiOutlinedInput-input,
+.settings-main-inner-panel .MuiInputBase-input,
+.settings-main-inner-panel .MuiSelect-select {
+  color: var(--users-input-text, rgba(0, 0, 0, 0.87));
+  -webkit-text-fill-color: var(--users-input-text, rgba(0, 0, 0, 0.87));
+}
+
+.settings-main-inner-panel .MuiInputLabel-root {
+  color: var(--users-input-label-text, rgba(0, 0, 0, 0.6));
+}
+
+/* Users create/edit modals (portal) — white fields need dark text on default slate */
+.users-modal-shell .MuiOutlinedInput-input,
+.users-modal-shell .MuiInputBase-input,
+.users-modal-shell .MuiSelect-select,
+.users-modal-shell .MuiListItemText-primary {
+  color: var(--users-input-text, rgba(0, 0, 0, 0.87)) !important;
+  -webkit-text-fill-color: var(--users-input-text, rgba(0, 0, 0, 0.87)) !important;
+}
+
+/* Disabled Create/Save — beat theme accent gradient (!important) with Theme 4 muted grey.
+   Must include the same :not() chain as html.*.MuiButton-contained rules or those win. */
+html.custom-theme .users-modal-shell .MuiButton-contained.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.theme-background-preset-btn),
+html.gold-theme .users-modal-shell .MuiButton-contained.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.help-download-btn):not(.heatmap-mode-tab-btn),
+html.theme-3-page .users-modal-shell .MuiButton-contained.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.theme-background-preset-btn),
+html.theme-4-page .users-modal-shell .MuiButton-contained.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo),
+.users-modal-shell .MuiButton-contained.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo) {
+  background: #A6A49A !important;
+  background-color: #A6A49A !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.users-modal-shell .MuiInputLabel-root {
+  color: var(--users-input-label-text, rgba(0, 0, 0, 0.6)) !important;
+}
+
+.users-modal-shell .MuiInputLabel-root.Mui-focused {
+  color: var(--users-input-text, rgba(0, 0, 0, 0.87)) !important;
+}
+
+.users-modal-shell .MuiSelect-icon {
+  color: var(--users-input-label-text, rgba(0, 0, 0, 0.6)) !important;
+}
+
+.users-modal-shell .MuiTypography-root {
+  color: var(--settings-panel-text, #1c2330);
+}
+
+.users-modal-shell .MuiTypography-body2,
+.users-modal-shell .MuiTypography-caption {
+  color: var(--settings-panel-muted-text, rgba(0, 0, 0, 0.6));
+}
+
+/* Helper/error text under white inputs (e.g. "Enter a valid email") — never white-on-white */
+.users-modal-shell .MuiFormHelperText-root,
+html.custom-theme .users-modal-shell .MuiFormHelperText-root,
+html.gold-theme .users-modal-shell .MuiFormHelperText-root,
+html.theme-3-page .users-modal-shell .MuiFormHelperText-root,
+html.theme-4-page .users-modal-shell .MuiFormHelperText-root {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+.users-modal-shell .MuiFormHelperText-root.Mui-error,
+html.custom-theme .users-modal-shell .MuiFormHelperText-root.Mui-error,
+html.gold-theme .users-modal-shell .MuiFormHelperText-root.Mui-error,
+html.theme-3-page .users-modal-shell .MuiFormHelperText-root.Mui-error,
+html.theme-4-page .users-modal-shell .MuiFormHelperText-root.Mui-error {
+  color: #c62828 !important;
+  -webkit-text-fill-color: #c62828 !important;
+}
+
+/* Settings panels — helper text on white/light fields */
+.settings-main-inner-panel .MuiFormHelperText-root,
+html.custom-theme .settings-main-inner-panel .MuiFormHelperText-root,
+html.gold-theme .settings-main-inner-panel .MuiFormHelperText-root,
+html.theme-3-page .settings-main-inner-panel .MuiFormHelperText-root,
+html.theme-4-page .settings-main-inner-panel .MuiFormHelperText-root {
+  color: rgba(0, 0, 0, 0.72) !important;
+  -webkit-text-fill-color: rgba(0, 0, 0, 0.72) !important;
+}
+.settings-main-inner-panel .MuiFormHelperText-root.Mui-error,
+html.custom-theme .settings-main-inner-panel .MuiFormHelperText-root.Mui-error,
+html.gold-theme .settings-main-inner-panel .MuiFormHelperText-root.Mui-error,
+html.theme-3-page .settings-main-inner-panel .MuiFormHelperText-root.Mui-error,
+html.theme-4-page .settings-main-inner-panel .MuiFormHelperText-root.Mui-error {
+  color: #c62828 !important;
+  -webkit-text-fill-color: #c62828 !important;
+}
+
+/* Light-surface Select menus (Users floors, FOFP floor, etc.) */
+.users-select-menu .MuiMenuItem-root,
+.users-select-menu .MuiListSubheader-root,
+.users-select-menu .MuiListItemText-primary {
+  color: var(--settings-panel-text, #1c2330) !important;
+}
+
+.users-select-menu .MuiMenuItem-root:hover,
+.users-select-menu .MuiMenuItem-root.Mui-focusVisible {
+  background-color: var(--users-select-menu-hover, #d6dde8) !important;
+  color: var(--settings-panel-text, #1c2330) !important;
+}
+
+.users-select-menu .MuiMenuItem-root.Mui-selected,
+.users-select-menu .MuiMenuItem-root.Mui-selected:hover,
+.users-select-menu .MuiMenuItem-root.Mui-selected.Mui-focusVisible {
+  background-color: var(--users-select-menu-selected-bg, var(--dashboard-select-option-selected-bg, var(--users-select-menu-hover, #d6dde8))) !important;
+  color: var(--users-select-menu-selected-text, var(--dashboard-select-option-selected-text, var(--settings-panel-text, #1c2330))) !important;
+}
+
+.users-select-menu .MuiMenuItem-root.Mui-selected .MuiListItemText-primary,
+.users-select-menu .MuiMenuItem-root.Mui-selected:hover .MuiListItemText-primary,
+.users-select-menu .MuiMenuItem-root.Mui-selected.Mui-focusVisible .MuiListItemText-primary {
+  color: var(--users-select-menu-selected-text, var(--dashboard-select-option-selected-text, var(--settings-panel-text, #1c2330))) !important;
+}
+
+.users-select-menu .MuiCheckbox-root {
+  color: var(--users-select-menu-checkbox-color, rgba(0, 0, 0, 0.55)) !important;
+}
+
+.users-select-menu .MuiCheckbox-root.Mui-checked {
+  color: var(--users-select-menu-checkbox-checked-color, var(--app-button, #3d4a5c)) !important;
+}
+
+.users-select-menu .MuiCheckbox-root .MuiSvgIcon-root {
+  color: inherit !important;
+}
+
+.users-select-menu .MuiMenuItem-root.Mui-selected .MuiCheckbox-root,
+.users-select-menu .MuiMenuItem-root.Mui-selected:hover .MuiCheckbox-root,
+.users-select-menu .MuiMenuItem-root.Mui-selected.Mui-focusVisible .MuiCheckbox-root {
+  color: var(--users-select-menu-selected-text, var(--dashboard-select-option-selected-text, var(--settings-panel-muted-text, #4a586c))) !important;
+  opacity: 0.85;
+}
+
+.users-select-menu .MuiMenuItem-root.Mui-selected .MuiCheckbox-root.Mui-checked,
+.users-select-menu .MuiMenuItem-root.Mui-selected:hover .MuiCheckbox-root.Mui-checked,
+.users-select-menu .MuiMenuItem-root.Mui-selected.Mui-focusVisible .MuiCheckbox-root.Mui-checked {
+  color: var(--users-select-menu-selected-text, var(--dashboard-select-option-selected-text, var(--app-button, #3d4a5c))) !important;
+  opacity: 1;
+}
+
+/* Processor / area-picker dialogs on light panels */
+.area-picker-light-dialog,
+.settings-theme-dialog {
+  color: var(--settings-panel-text, #1c2330);
+}
+
+.area-picker-light-dialog .MuiTypography-root,
+.settings-theme-dialog .MuiTypography-root {
+  color: var(--settings-panel-text, #1c2330);
+}
+
+.area-picker-light-dialog .MuiTypography-colorError,
+.settings-theme-dialog .MuiTypography-colorError,
+.area-picker-light-dialog .MuiAlert-standardError,
+.settings-theme-dialog .MuiAlert-standardError {
+  color: #c62828 !important;
+}
+
+.area-picker-light-dialog .MuiListItem-root,
+.settings-theme-dialog .MuiListItem-root {
+  color: var(--settings-panel-text, #1c2330);
+}
+
+/* FOFP toolbar — floor select on white inner panel */
+.fofp-floor-select-field .MuiSelect-select,
+.fofp-floor-select-field .MuiOutlinedInput-input {
+  color: var(--users-input-text, rgba(0, 0, 0, 0.87)) !important;
+  -webkit-text-fill-color: var(--users-input-text, rgba(0, 0, 0, 0.87)) !important;
+}
+
+.fofp-floor-select-field .MuiInputLabel-root {
+  color: var(--users-input-label-text, rgba(0, 0, 0, 0.6)) !important;
+}
+
+.fofp-floor-select-field .MuiSelect-icon {
+  color: var(--users-input-label-text, rgba(0, 0, 0, 0.6)) !important;
+}
+
+.fofp-floor-select-menu .MuiMenuItem-root {
+  color: var(--settings-panel-text, #1c2330) !important;
+}
+
+.fofp-floor-select-menu .MuiMenuItem-root.Mui-selected,
+.fofp-floor-select-menu .MuiMenuItem-root:hover {
+  background-color: var(--users-select-menu-selected-bg, var(--dashboard-select-option-selected-bg, var(--users-select-menu-hover, #d6dde8))) !important;
+  color: var(--users-select-menu-selected-text, var(--dashboard-select-option-selected-text, var(--settings-panel-text, #1c2330))) !important;
+}
+
+.fofp-floor-select-menu .MuiMenuItem-root.Mui-selected .MuiListItemText-primary,
+.fofp-floor-select-menu .MuiMenuItem-root:hover .MuiListItemText-primary {
+  color: var(--users-select-menu-selected-text, var(--dashboard-select-option-selected-text, var(--settings-panel-text, #1c2330))) !important;
+}
+
+.settings-page-toolbar {
+  width: 100%;
+}
+
+.settings-responsive-table,
+.settings-main-inner-panel .MuiTableContainer-root {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.settings-main-inner-panel .MuiTable-root {
+  min-width: 0;
+}
+
+@media (max-width: 599px) {
+  .settings-main-inner-panel .MuiGrid-item {
+    max-width: 100%;
+  }
+
+  .settings-main-inner-panel .MuiDialog-paper {
+    margin: 12px !important;
+    width: calc(100% - 24px) !important;
+    max-width: calc(100% - 24px) !important;
+  }
+}
+
+/* Shared page containers */
+.area-group-container,
+.settings-container,
+.lutron-website-container,
+.help-container,
+.schedule-container,
+.activity-report-page {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Heatmap: stack map + sidebar on narrow screens (< 600px) */
+@media (max-width: 599px) {
+  .heatmap-container {
+    flex-direction: column !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: calc(100dvh - 140px) !important;
+    overflow-y: auto !important;
+  }
+
+  .heatmap-area-sidebar {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    max-height: 50vh !important;
+    border-radius: 14px 14px 0 0 !important;
+  }
+}
+
+/* Dashboard: filters and controls wrap on small screens */
+@media (max-width: 899px) {
+  .dashboard-area-filter-trigger,
+  .dashboard-area-tree-panel,
+  .dashboard-duration-select,
+  .dashboard-lighting-unit-select {
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 599px) {
+  .MuiDialog-paper {
+    max-width: calc(100vw - 32px) !important;
+    margin: 16px !important;
+  }
+}
+
+.MuiPaper-root.MuiAppBar-root {
+  /* Previous brown theme - kept for quick rollback */
+  /* background: linear-gradient(90deg, #443D31 0%, #544C3D 100%) !important; */
+  /*
+   * Keep a default header background here, but DO NOT force it with !important
+   * so `TopbarComponent.jsx` can react to theme changes.
+   */
+  /* background intentionally controlled by TopbarComponent */
+  border: none !important;
+  box-shadow: var(--premium-button-shadow, none) !important;
+  transition: transform var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    box-shadow var(--premium-motion-fast, 150ms) var(--premium-easing, ease),
+    opacity 0.25s ease !important;
+  border-radius: 10px !important;
+  margin-top: 15px !important;
+}
+
+/* Create user disabled CTA — last in file so it wins theme gradient !important rules */
+html.custom-theme .users-create-submit-btn.MuiButton-contained.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.theme-background-preset-btn),
+html.gold-theme .users-create-submit-btn.MuiButton-contained.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.help-download-btn):not(.heatmap-mode-tab-btn),
+html.theme-3-page .users-create-submit-btn.MuiButton-contained.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo):not(.theme-background-preset-btn),
+html.theme-4-page .users-create-submit-btn.MuiButton-contained.Mui-disabled:not(.MuiButton-colorError):not(.MuiButton-colorWarning):not(.MuiButton-colorSuccess):not(.MuiButton-colorInfo),
+.users-create-submit-btn.MuiButton-contained.Mui-disabled {
+  background: #A6A49A !important;
+  background-color: #A6A49A !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Occupancy mode pills — final override (must stay after theme MuiButton-contained rules) */
+html.gold-theme .asd-occupancy-mode-btn:not(.asd-occupancy-mode-btn--active).MuiButton-contained,
+html.custom-theme .asd-occupancy-mode-btn:not(.asd-occupancy-mode-btn--active).MuiButton-contained,
+html.theme-3-page .asd-occupancy-mode-btn:not(.asd-occupancy-mode-btn--active).MuiButton-contained,
+html.theme-4-page .asd-occupancy-mode-btn:not(.asd-occupancy-mode-btn--active).MuiButton-contained,
+.asd-occupancy-mode-btn:not(.asd-occupancy-mode-btn--active).MuiButton-contained {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+  border: 2px solid var(--app-button, #3d4a5c) !important;
+}
+html.gold-theme .asd-occupancy-mode-btn--active.MuiButton-contained,
+html.custom-theme .asd-occupancy-mode-btn--active.MuiButton-contained,
+html.theme-3-page .asd-occupancy-mode-btn--active.MuiButton-contained,
+html.theme-4-page .asd-occupancy-mode-btn--active.MuiButton-contained,
+.asd-occupancy-mode-btn--active.MuiButton-contained {
+  background: var(--app-button, #3d4a5c) !important;
+  background-color: var(--app-button, #3d4a5c) !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+/* Dashboard Fullscreen Card Enlarge Styling */
+.dashboard-fullscreen-card-inner,
+.dashboard-fullscreen-card-inner > div,
+.dashboard-fullscreen-card-inner .MuiBox-root,
+.dashboard-fullscreen-card-inner .chart-card-animated {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.dashboard-fullscreen-card-inner [style*="height: 360px"],
+.dashboard-fullscreen-card-inner [style*="height:360px"],
+.dashboard-fullscreen-card-inner [style*="height: 400px"],
+.dashboard-fullscreen-card-inner [style*="height:400px"],
+.dashboard-fullscreen-card-inner [style*="min-height: 360px"],
+.dashboard-fullscreen-card-inner [style*="minHeight: 360"] {
+  height: 100% !important;
+  flex: 1 1 auto !important;
+  min-height: 360px !important;
+}
+
+.dashboard-fullscreen-card-inner .recharts-responsive-container {
+  height: 100% !important;
+  min-height: 360px !important;
+  flex: 1 1 auto !important;
+}
+

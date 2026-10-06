@@ -1,0 +1,8 @@
+' Hidden PM2 resurrect (no console). Same command as pm2-resurrect.cmd.
+Option Explicit
+Dim sh, env
+Set sh = CreateObject("Wscript.Shell")
+Set env = sh.Environment("Process")
+env("PM2_HOME") = "{{PM2_HOME}}"
+env("PATH") = "{{NODE_DIR}};" & env("PATH")
+sh.Run """{{NODE_EXE}}"" ""{{PM2_BIN}}"" resurrect", 0, True

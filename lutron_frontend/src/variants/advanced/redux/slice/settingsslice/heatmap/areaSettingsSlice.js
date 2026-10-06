@@ -1,0 +1,32 @@
+import { BaseUrl } from "../../../../BaseUrl";
+import { createAreaSettingsModule } from "../../../../../../shared/redux/slices/createAreaSettingsModule";
+
+const _module = createAreaSettingsModule({ BaseUrl });
+
+export default _module.reducer;
+export const fetchLockStatus = _module.fetchLockStatus;
+export const updateLockStatus = _module.updateLockStatus;
+export const fetchOccupancyMode = _module.fetchOccupancyMode;
+export const updateOccupancyMode = _module.updateOccupancyMode;
+export const fetchEditScenes = _module.fetchEditScenes;
+export const updateScene = _module.updateScene;
+export const fetchAreaScenes = _module.fetchAreaScenes;
+export const fetchSceneStatus = _module.fetchSceneStatus;
+export const editScene = _module.editScene;
+export const fetchTunningSettings = _module.fetchTunningSettings;
+export const updateZoneTuning = _module.updateZoneTuning;
+export const selectAreaSettings = _module.selectAreaSettings;
+export const selectAreaSettingsLoading = _module.selectAreaSettingsLoading;
+export const selectAreaSettingsLockLoading = _module.selectAreaSettingsLockLoading;
+export const selectLockStatus = _module.selectLockStatus;
+export const selectOccupancy = _module.selectOccupancy;
+export const selectScenes = _module.selectScenes;
+export const selectAreaScenes = _module.selectAreaScenes;
+export const selectSceneStatus = _module.selectSceneStatus;
+export const selectEditSceneLoading = _module.selectEditSceneLoading;
+export const selectTunningSettings = _module.selectTunningSettings;
+export const selectTunningSettingsLoading = _module.selectTunningSettingsLoading;
+export const selectZoneTuningUpdateLoading = _module.selectZoneTuningUpdateLoading;
+export const selectZoneTuningUpdateError = _module.selectZoneTuningUpdateError;
+export const selectTunningZones = _module.selectTunningZones;
+export const selectHasKeypad = _module.selectHasKeypad;

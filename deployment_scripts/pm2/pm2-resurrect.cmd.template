@@ -1,0 +1,4 @@
+@echo off
+set "PM2_HOME={{PM2_HOME}}"
+set "PATH={{NODE_DIR}};%PATH%"
+"{{NODE_EXE}}" "{{PM2_BIN}}" resurrect

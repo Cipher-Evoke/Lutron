@@ -1,0 +1,49 @@
+/* Word-style numeric labels in Settings Home font-size picker. */
+.settings-home-quill .ql-picker.ql-size {
+  width: 58px;
+}
+.settings-home-quill .ql-picker.ql-size .ql-picker-label::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item::before {
+  content: attr(data-value);
+}
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='8px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='8px']::before { content: '8'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='9px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='9px']::before { content: '9'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='10px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='10px']::before { content: '10'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='11px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='11px']::before { content: '11'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='12px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='12px']::before { content: '12'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='14px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='14px']::before { content: '14'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='16px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='16px']::before { content: '16'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='18px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='18px']::before { content: '18'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='20px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='20px']::before { content: '20'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='22px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='22px']::before { content: '22'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='24px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='24px']::before { content: '24'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='26px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='26px']::before { content: '26'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='28px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='28px']::before { content: '28'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='36px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='36px']::before { content: '36'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='48px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='48px']::before { content: '48'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label[data-value='72px']::before,
+.settings-home-quill .ql-picker.ql-size .ql-picker-item[data-value='72px']::before { content: '72'; }
+.settings-home-quill .ql-picker.ql-size .ql-picker-label:not([data-value])::before {
+  content: '12';
+}
+.settings-home-quill .ql-picker.ql-size .ql-picker-options {
+  max-height: 280px;
+  overflow-y: auto;
+  color: #444;
+  z-index: 30;
+}

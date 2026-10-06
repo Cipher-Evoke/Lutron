@@ -1,0 +1,32 @@
+import { BaseUrl } from "../../../BaseUrl";
+import { createFofpModule } from "../../../../../shared/redux/slices/createFofpModule";
+
+const _module = createFofpModule({ BaseUrl });
+
+export default _module.reducer;
+export const fetchFofpLayout = _module.fetchFofpLayout;
+export const generateFofpLayout = _module.generateFofpLayout;
+export const fetchFofpConfig = _module.fetchFofpConfig;
+export const updateFofpConfig = _module.updateFofpConfig;
+export const saveFofpLayout = _module.saveFofpLayout;
+export const selectFofpFloorId = _module.selectFofpFloorId;
+export const selectFofpPositions = _module.selectFofpPositions;
+export const selectFofpLoading = _module.selectFofpLoading;
+export const selectFofpError = _module.selectFofpError;
+export const selectFofpGenerating = _module.selectFofpGenerating;
+export const selectFofpGenerateError = _module.selectFofpGenerateError;
+export const selectFofpLastGenerateResult = _module.selectFofpLastGenerateResult;
+export const selectFofpSaving = _module.selectFofpSaving;
+export const selectFofpSaveError = _module.selectFofpSaveError;
+export const selectFofpLastSaveResult = _module.selectFofpLastSaveResult;
+export const selectFofpConfig = _module.selectFofpConfig;
+export const selectFofpConfigLoading = _module.selectFofpConfigLoading;
+export const selectFofpConfigSaving = _module.selectFofpConfigSaving;
+export const selectFofpConfigError = _module.selectFofpConfigError;
+export const selectFofpPreviewMarkerColor = _module.selectFofpPreviewMarkerColor;
+export const selectFofpEffectiveMarkerColor = _module.selectFofpEffectiveMarkerColor;
+export const clearFofpState = _module.clearFofpState;
+export const clearFofpErrors = _module.clearFofpErrors;
+export const setPreviewMarkerColor = _module.setPreviewMarkerColor;
+export const clearPreviewMarkerColor = _module.clearPreviewMarkerColor;
+export const mergeFofpConfigFields = _module.mergeFofpConfigFields;

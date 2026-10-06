@@ -1,0 +1,34 @@
+module.exports = {
+  apps: [
+    {
+      name: "{{BACKEND_NAME}}",
+      cwd: "{{BACKEND_CWD}}",
+      script: "{{BACKEND_SCRIPT}}",
+      args: "{{BACKEND_ARGS}}",
+      interpreter: "none",
+      windowsHide: true,
+      autorestart: true,
+      max_restarts: 50,
+      min_uptime: "10s",
+      out_file: "{{BACKEND_OUT}}",
+      error_file: "{{BACKEND_ERR}}",
+      merge_logs: true,
+      time: true
+    },
+    {
+      name: "{{FRONTEND_NAME}}",
+      cwd: "{{FRONTEND_CWD}}",
+      script: "{{FRONTEND_SCRIPT}}",
+      args: "{{FRONTEND_ARGS}}",
+      interpreter: "none",
+      windowsHide: true,
+      autorestart: true,
+      max_restarts: 50,
+      min_uptime: "10s",
+      out_file: "{{FRONTEND_OUT}}",
+      error_file: "{{FRONTEND_ERR}}",
+      merge_logs: true,
+      time: true
+    }
+  ]
+};

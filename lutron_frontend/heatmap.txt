@@ -1,0 +1,3752 @@
+import React, { useEffect, useRef, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  Box, CircularProgress, IconButton, Typography, Slider, Badge, Button, useMediaQuery, useTheme
+} from "@mui/material";
+import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import ZoomOutIcon from "@mui/icons-material/ZoomOut";
+import FitScreenIcon from "@mui/icons-material/FitScreen";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import { Document, Page, pdfjs } from "react-pdf";
+import {
+  fetchFloorMapData,
+  fetchAreaOccupancyStatus,
+  fetchAreaEnergyConsumption,
+  selectPdfUrl,
+  selectHeatmapData,
+  selectSelectedFloorId,
+  selectDisplayMode,
+  setSelectedFloorId,
+  fetchAreaStatus,
+  selectAreaStatus,
+  selectAreaStatusLoading,
+  selectAreaStatusError,
+  updateAreaLightStatus,
+  updateZoneSettings,
+  updateZonesByArea,
+  toggleAllZonesInArea,
+  updateAreaScene,
+  refreshAllHeatmapData,
+  selectHeatmapLoading,
+  optimisticallyUpdateAreaStatus,
+  selectHeatmapSearchTerm, // added
+} from '../../redux/slice/settingsslice/heatmap/HeatmapSlice';
+import { fetchFloors, selectFloors } from "../../redux/slice/floor/floorSlice";
+import { BaseUrl } from '../../BaseUrl'
+import CloseIcon from "@mui/icons-material/Close";
+import SettingsIcon from "@mui/icons-material/Settings";
+import Switch from "@mui/material/Switch";
+import PersonIcon from '@mui/icons-material/Person';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { fetchProcessors } from '../../redux/slice/processor/processorSlice';
+
+import AreaSettingsDialog from '../heatmap/AreaSettingsDialog '// Adjust path as needed
+
+import { fetchApplicationTheme, fetchHeatMapTheme, selectApplicationTheme, selectHeatMapTheme } from "../../redux/slice/theme/themeSlice";
+//import SearchComponent from "../../layouts/SearchComponent"; // adjust path as needed
+
+import { UseAuth } from '../../customhooks/UseAuth'; // Add this import
+
+import { interpolateHexColor, arraylargest } from '../../utils/colorScale';
+
+
+const isWhitening = (type) => ['whitening', 'white tune', 'whitetune', 'white_tune', 'White Tune', 'WhiteTune'].includes((type || '').toLowerCase());
+const isDimmed = (type) => (type || '').toLowerCase() === 'dimmed';
+const isSwitched = (type) => (type || '').toLowerCase() === 'switched';
+
+// Add the missing TOP_PADDING constant
+const TOP_PADDING = 60; // Adjust this value based on your header height
+
+pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
+
+function toTitleCase(str) {
+  return str.replace(/\w\S*/g, (txt) =>
+    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+  );
+}
+
+const HeatMap = () => {
+  
+  const dispatch = useDispatch();
+  const theme = useTheme();
+  
+  // Get current user role and permissions
+  const { role: currentUserRole } = UseAuth();
+  
+  // Get user profile from Redux state
+  const userProfile = useSelector(state => state.user.profile);
+  
+  const pdfUrl = useSelector(selectPdfUrl);
+  const heatmapData = useSelector(selectHeatmapData);
+  const selectedFloorId = useSelector(selectSelectedFloorId);
+  const displayMode = useSelector(selectDisplayMode);
+  const floors = useSelector(selectFloors);
+  const areaStatus = useSelector(selectAreaStatus);
+  const areaStatusLoading = useSelector(selectAreaStatusLoading);
+  const areaStatusError = useSelector(selectAreaStatusError);
+  const heatmapLoading = useSelector(selectHeatmapLoading);
+  const searchTerm = useSelector(selectHeatmapSearchTerm); // added
+
+  // Function to check if user can access a specific floor
+  const canAccessFloor = (floorId) => {
+    // Superadmin and Admin can access all floors
+    if (currentUserRole === 'Superadmin' || currentUserRole === 'Admin') {
+      return true;
+    }
+    
+    // For Operators, check if they have access to this floor
+    if (currentUserRole === 'Operator' && userProfile && userProfile.floors) {
+      return userProfile.floors.some(f => f.floor_id === floorId);
+    }
+    
+    // Default: can access
+    return true;
+  };
+
+  // Function to get available floors based on user permissions
+  const getAvailableFloors = () => {
+    // Superadmin and Admin can see all floors
+    if (currentUserRole === 'Superadmin' || currentUserRole === 'Admin') {
+      return floors;
+    }
+    
+    // For Operators, only show floors they have access to
+    if (currentUserRole === 'Operator' && userProfile && userProfile.floors) {
+      const operatorFloorIds = userProfile.floors.map(f => f.floor_id);
+      return floors.filter(floor => operatorFloorIds.includes(floor.id));
+    }
+    
+    // Default: return all floors
+    return floors;
+  };
+
+  // Function to check if user can update area status (scenes, zones, shades)
+  const canUpdateAreaStatus = () => {
+    // Superadmin and Admin can always update area status
+    if (currentUserRole === 'Superadmin' || currentUserRole === 'Admin') {
+      return true;
+    }
+    
+    // For Operators, check if they have the required permissions for the current floor
+    if (currentUserRole === 'Operator' && selectedFloorId && userProfile && userProfile.floors) {
+      const currentFloorPermission = userProfile.floors.find(f => f.floor_id === selectedFloorId);
+      
+      if (currentFloorPermission) {
+        const permission = currentFloorPermission.floor_permission;
+        // Allow updates for both "monitor_control" (Monitoring and Control) AND "monitor_control_edit" (Monitoring, Control and Edit)
+        // NOT for "monitor" (Monitoring only)
+        return permission === 'monitor_control' || permission === 'monitor_control_edit';
+      }
+    }
+    
+    // Default: Operators cannot update area status
+    return false;
+  };
+
+  // Function to check if user can modify device lock and occupancy settings
+  const canModifyDeviceSettings = () => {
+    // Superadmin and Admin can always modify device settings
+    if (currentUserRole === 'Superadmin' || currentUserRole === 'Admin') {
+      return true;
+    }
+    
+    // For Operators, check if they have the required permissions for the current floor
+    if (currentUserRole === 'Operator' && selectedFloorId && userProfile && userProfile.floors) {
+      const currentFloorPermission = userProfile.floors.find(f => f.floor_id === selectedFloorId);
+      
+      if (currentFloorPermission) {
+        const permission = currentFloorPermission.floor_permission;
+        // Allow modifications for "monitor_control" (Monitoring and Control) AND "monitor_control_edit" (Monitoring, Control and Edit)
+        // NOT for "monitoring" (Monitoring only)
+        return permission === 'monitor_control' || permission === 'monitor_control_edit';
+      }
+    }
+    
+    // Default: Operators cannot modify device settings
+    return false;
+  };
+
+  // Function to check if user can edit scenes
+  const canEditScene = () => {
+    // Superadmin and Admin can always edit scenes
+    if (currentUserRole === 'Superadmin' || currentUserRole === 'Admin') {
+      return true;
+    }
+    
+    // For Operators, check if they have the required permissions for the current floor
+    if (currentUserRole === 'Operator' && selectedFloorId && userProfile && userProfile.floors) {
+      const currentFloorPermission = userProfile.floors.find(f => f.floor_id === selectedFloorId);
+      
+      if (currentFloorPermission) {
+        const permission = currentFloorPermission.floor_permission;
+        // Only allow scene editing for "monitor_control_edit" (Monitoring, Control and Edit)
+        // NOT for "monitor_control" (Monitoring and Control only)
+        return permission === 'monitor_control_edit';
+      }
+    }
+    
+    // Default: Operators cannot edit scenes
+    return false;
+  };
+
+  // Function to check if user can view area settings (even if they can't modify them)
+  const canViewAreaSettings = () => {
+    // All authenticated users can view area settings
+    // This includes Superadmin, Admin, and all Operators regardless of floor permissions
+    return true;
+  };
+
+
+
+  // Responsive breakpoints - optimized for better coverage including ultra-wide screens
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // < 600px
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md')); // 600px - 900px
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md')); // >= 900px
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg')); // >= 1200px
+  const is1440Screen = useMediaQuery('(min-width:1440px)'); // >= 1440px
+  const isUltraWide = useMediaQuery(theme.breakpoints.up('xl')); // >= 1920px
+  const is2560Screen = useMediaQuery('(min-width:2560px)'); // >= 2560px
+
+  // A4 dimensions in pixels (at 96 DPI) - fallback values
+  const A4_WIDTH = 794;  // 8.27 inches * 96 DPI
+  const A4_HEIGHT = 1123; // 11.69 inches * 96 DPI
+
+  const [scale, setScale] = useState(1);
+  const [hasFit, setHasFit] = useState(false);
+  const containerRef = useRef();
+
+  // Enhanced container reference with better dimension detection
+  const getContainerDimensions = () => {
+    if (!containerRef.current) return { width: 0, height: 0 };
+
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
+
+    // Get the actual container dimensions
+    const width = rect.width || container.offsetWidth || container.clientWidth || container.scrollWidth;
+    const height = rect.height || container.offsetHeight || container.clientHeight || container.scrollHeight;
+
+    // Use the actual container dimensions and ensure they're not zero
+    if (!width || !height) {
+      // Fallback to parent container dimensions
+      const parent = container.parentElement;
+      if (parent) {
+        const parentRect = parent.getBoundingClientRect();
+        return {
+          width: Math.max(parentRect.width, 300),
+          height: Math.max(parentRect.height, 200)
+        };
+      }
+    }
+
+    const result = {
+      width: Math.max(width, 300),
+      height: Math.max(height, 200)
+    };
+
+    return result;
+  };
+  const [selectedAreaId, setSelectedAreaId] = useState(null);
+  const [scenePage, setScenePage] = useState(0);
+  const SCENES_PER_PAGE = isMobile ? 6 : isTablet ? 8 : 9;
+  const [lightOn, setLightOn] = useState(areaStatus && areaStatus.light_status === "On");
+  const [shadesGroups, setShadesGroups] = useState([
+    { name: "Group 1", value: 50 },
+    { name: "Group 2", value: 50 },
+    { name: "Group 3", value: 50 },
+  ]);
+  const [selectedPreset, setSelectedPreset] = useState(null);
+  const [zonePage, setZonePage] = useState(0);
+  const [updating, setUpdating] = useState(false);
+  const [zoneLocalValues, setZoneLocalValues] = React.useState({});
+  const [zoneUpdating, setZoneUpdating] = React.useState(false);
+  const [mainToggleUpdating, setMainToggleUpdating] = useState(false);
+  const [lastOccupancyStatus, setLastOccupancyStatus] = useState({});
+  const [lastEnergyStatus, setLastEnergyStatus] = useState({});
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [shadesLocalValues, setShadesLocalValues] = useState({});
+  const [shadesUpdating, setShadesUpdating] = useState(false);
+  const [fitScale, setFitScale] = useState(1);
+  const [filteredAreas, setFilteredAreas] = useState(heatmapData.areas || []);
+
+  const appTheme = useSelector(selectApplicationTheme);
+  const backgroundColor = appTheme?.application_theme?.background || '#d2c4a2';
+  const contentColor = appTheme?.application_theme?.content || 'rgba(128, 120, 100, 0.7)';
+  const buttonColor = appTheme?.application_theme?.button || '#232323'
+
+  const [refreshing, setRefreshing] = useState(false);
+  const layoutRef = useRef(null);
+  const [availableHeight, setAvailableHeight] = useState(null);
+  const [pan, setPan] = useState({ x: 0, y: 0 }); // added: pan state for dragging
+  const [highlightedAreaId, setHighlightedAreaId] = useState(null); // added: popup highlight target
+  const [isDragging, setIsDragging] = useState(false); // added: drag state
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 }); // added: drag start position
+  const [searchBounceAnimation, setSearchBounceAnimation] = useState(false); // added: search bounce animation
+
+  // Add a loading state for the PDF
+  const [pdfLoading, setPdfLoading] = useState(false);
+  // Bounding box of all areas (used to crop PDF whitespace)
+  const [contentBBox, setContentBBox] = useState(null);
+  // Track when the PDF page dimensions are actually loaded
+  const [pdfLoaded, setPdfLoaded] = useState(false);
+
+  const [pageDims, setPageDims] = useState(null);
+
+  // Ensure floors are loaded
+  useEffect(() => {
+    if (!floors || floors.length === 0) {
+      dispatch(fetchFloors());
+    }
+  }, [dispatch, floors]);
+
+  // Component mount handling
+  useEffect(() => {
+    // Component mounted
+  }, []);
+
+  // Default to first floor when none is selected
+  useEffect(() => {
+    if (!selectedFloorId && Array.isArray(floors) && floors.length > 0) {
+      dispatch(setSelectedFloorId(floors[0].id));
+    }
+  }, [dispatch, floors, selectedFloorId]);
+
+  // Initial fit when component mounts to ensure proper coverage
+  useEffect(() => {
+    // Only attempt to fit if we have pageDims (PDF has loaded)
+    if (!pageDims) return;
+
+    const initialFit = () => {
+      if (containerRef.current && pageDims) {
+        handleFit();
+      }
+    };
+
+    // Try to fit after a short delay to ensure everything is rendered
+    const timeoutId = setTimeout(initialFit, 100);
+
+    // Fallback fit attempt if the first one doesn't work
+    const fallbackTimeoutId = setTimeout(() => {
+      if (!hasFit && containerRef.current && pageDims) {
+        handleFit();
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearTimeout(fallbackTimeoutId);
+    };
+  }, [pageDims, hasFit]); // Only depend on pageDims and hasFit
+
+  // Removed unused constants for better space utilization
+
+  // Responsive zones per page based on screen size
+  const getZonesPerPage = () => {
+    if (isMobile) return 1;
+    if (isTablet) return 2;
+    if (isLargeScreen) return 3;
+    if (isUltraWide) return 4;
+    if (is2560Screen) return 5;
+    return 2; // Default for desktop
+  };
+  
+  const ZONES_PER_PAGE = getZonesPerPage();
+  const SHADES_PER_PAGE = isMobile ? 2 : isTablet ? 3 : 4;
+
+  const [shadesPage, setShadesPage] = useState(0);
+
+  const shades = areaStatus?.zones?.filter(z => (z.type || '').toLowerCase() === 'shade') || [];
+  const pagedShades = shades.slice(shadesPage * SHADES_PER_PAGE, (shadesPage + 1) * SHADES_PER_PAGE);
+
+  //heatmap api calling
+  const heatMapTheme = useSelector(selectHeatMapTheme);
+  const normalizeColor = (color) => {
+    if (!color) {
+      return '#e88330'; // Default fallback
+    }
+
+    if (typeof color === 'string' && color.startsWith('hsl')) {
+      const [h, s, l] = color.match(/\d+/g).map(Number);
+      const hexColor = hslToHex(h, s, l);
+      return hexColor;
+    }
+
+    // Ensure it's a valid hex color
+    if (typeof color === 'string' && color.startsWith('#')) {
+      return color;
+    }
+
+    return '#e88330'; // Default fallback
+  };
+
+  const hslToHex = (h, s, l) => {
+    s /= 100;
+    l /= 100;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+    const m = l - c / 2;
+    let r, g, b;
+    if (0 <= h && h < 60) [r, g, b] = [c, x, 0];
+    else if (60 <= h && h < 120) [r, g, b] = [x, c, 0];
+    else if (120 <= h && h < 180) [r, g, b] = [0, c, x];
+    else if (180 <= h && h < 240) [r, g, b] = [0, x, c];
+    else if (240 <= h && h < 300) [r, g, b] = [x, 0, c];
+    else[r, g, b] = [c, 0, x];
+    const toHex = n => {
+      const hex = Math.round((n + m) * 255).toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    };
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
+  const lightColor = normalizeColor(heatMapTheme?.application_theme?.light || '#f2ff00');
+  const occupancyColor = normalizeColor(heatMapTheme?.application_theme?.occupancy || '#ea3ebf');
+  const energyBaseColor = normalizeColor(heatMapTheme?.application_theme?.energy || '#a71ee6');
+
+  // Monitor theme changes
+  useEffect(() => {
+    // Theme change handling
+  }, [heatMapTheme, lightColor, occupancyColor, energyBaseColor]);
+  useEffect(() => {
+    dispatch(fetchHeatMapTheme());
+    dispatch(fetchApplicationTheme());
+  }, [dispatch]);
+
+  const applyButtonSx = {
+    background: '#222',
+    color: '#fff',
+    borderRadius: 2,
+    fontSize: { xs: 10, sm: 11, md: 12 },
+    fontWeight: 400,
+    px: { xs: 1.5, md: 2 },
+    py: { xs: 0.3, md: 0.5 },
+    minWidth: { xs: 50, md: 60 },
+    minHeight: { xs: 22, md: 25 },
+    alignSelf: 'flex-end',
+    mb: 1,
+    textTransform: 'none',
+    boxShadow: 1,
+    '&:hover': { background: '#111' }
+  };
+
+  const scaledWidth = (pageDims?.width || A4_WIDTH) * scale;
+  const scaledHeight = (pageDims?.height || A4_HEIGHT) * scale;
+  const MIN_SCALE = 0.2;
+  // Dynamic MAX_SCALE based on screen size for better ultra-wide support
+  const MAX_SCALE = is2560Screen ? 4.0 : isUltraWide ? 3.0 : 2.0;
+  const SCALE_STEP = 0.05;
+  // Add extra zoom out capability for tablets and ultra-wide screens
+  const MIN_SCALE_TABLET = isTablet ? 0.1 : is2560Screen ? 0.05 : 0.2;
+
+  // Keep a small gap above the PDF so it never clips
+  const TOP_PADDING = isMobile ? 6 : isTablet ? 8 : is2560Screen ? 15 : 10;
+
+  // Dynamic max scale: how big we can render without cropping the container
+  const getDynamicMaxScale = () => {
+    const { width: cw, height: ch } = getContainerDimensions();
+    if (!cw || !ch) return MAX_SCALE;
+    const viewW = pageDims?.width || A4_WIDTH;
+    const viewH = pageDims?.height || A4_HEIGHT;
+    const sw = cw / viewW;
+    const sh = ch / viewH;
+    return Math.max(sw, sh) + 0.01;
+  };
+
+  useEffect(() => {
+    if (!selectedFloorId) return;
+
+    setPdfLoaded(false);
+    if (displayMode === "Light") {
+      setPdfLoading(true);
+      setFilteredAreas([]);
+      dispatch(fetchFloorMapData({ floorId: selectedFloorId }))
+        .then(() => setPdfLoading(false));
+      setHasFit(false);
+    } else if (displayMode === "Occupancy") {
+      setPdfLoading(true);
+      setFilteredAreas([]);
+      dispatch(fetchAreaOccupancyStatus({ floorId: selectedFloorId }))
+        .then(() => setPdfLoading(false));
+      setHasFit(false);
+    } else if (displayMode === "Energy") {
+      setPdfLoading(true);
+      setFilteredAreas([]);
+      dispatch(fetchAreaEnergyConsumption({ floorId: selectedFloorId }))
+        .then(() => setPdfLoading(false));
+      setHasFit(false);
+    }
+  }, [dispatch, selectedFloorId, displayMode]);
+
+  // Calculate available height so the heatmap column fits the viewport exactly
+  useEffect(() => {
+    const recalc = () => {
+      if (!layoutRef.current) return;
+      const top = layoutRef.current.getBoundingClientRect().top;
+      // Use full viewport height minus the top offset to prevent scrolling
+      const h = Math.max(0, window.innerHeight - top - 20);
+      setAvailableHeight(h);
+    };
+    recalc();
+    window.addEventListener('resize', recalc);
+    return () => window.removeEventListener('resize', recalc);
+  }, []);
+
+  // Keep map fitted to container on window resize with optimized timing
+  useEffect(() => {
+    const onResize = () => {
+      setHasFit(false);
+      // Use different timing for different screen sizes to ensure proper fitting
+    const timeout = isMobile ? 100 : isTablet ? 75 : is2560Screen ? 25 : 50;
+      setTimeout(() => handleFit(), timeout);
+    };
+
+    // Debounced resize handler for better performance
+    let resizeTimeout;
+    const debouncedResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(onResize, 100);
+    };
+
+    window.addEventListener('resize', debouncedResize);
+    return () => {
+      window.removeEventListener('resize', debouncedResize);
+      clearTimeout(resizeTimeout);
+    };
+  }, [isMobile, isTablet, is2560Screen]);
+
+  // Re-fit map when available space changes (but NOT when area is selected)
+  useEffect(() => {
+    if (pageDims) { // Only re-fit if PDF is loaded
+    setHasFit(false);
+    // Use responsive timing for better fitting across different screen sizes
+    const timeout = isMobile ? 100 : isTablet ? 75 : is2560Screen ? 25 : 50;
+    const timeoutId = setTimeout(() => handleFit(), timeout);
+    return () => clearTimeout(timeoutId);
+    }
+  }, [availableHeight, isMobile, isTablet, is2560Screen, pageDims]); // Removed selectedAreaId
+
+  useEffect(() => {
+    if (pdfLoaded) return;
+    setHasFit(false);
+    const timeout = isMobile ? 100 : isTablet ? 75 : is2560Screen ? 25 : 50;
+    const timeoutId = setTimeout(() => handleFit(), timeout);
+    return () => clearTimeout(timeoutId);
+  }, [pdfLoaded, availableHeight, isMobile, isTablet, is2560Screen]); // Removed selectedAreaId
+
+  // Trigger fit when pageDims change (PDF loads)
+  useEffect(() => {
+    if (pageDims && !hasFit) {
+      // Small delay to ensure container is ready
+      const timeoutId = setTimeout(() => {
+        if (containerRef.current) {
+          handleFit();
+        }
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [pageDims, hasFit]);
+
+  // Fallback: ensure fit happens even if other mechanisms fail
+  useEffect(() => {
+    if (pageDims && !hasFit && containerRef.current) {
+      const timeoutId = setTimeout(() => {
+        if (!hasFit && containerRef.current) {
+          handleFit();
+        }
+      }, 1000); // 1 second delay as last resort
+      return () => clearTimeout(timeoutId);
+    }
+  }, [pageDims, hasFit]);
+
+  // Re-fit when status panel opens/closes to utilize full available space
+  // But only when the panel state actually changes (opens or closes), not when same area is clicked
+  const [previousSelectedAreaId, setPreviousSelectedAreaId] = useState(null);
+  
+  useEffect(() => {
+    if (pageDims && containerRef.current) {
+      // Only re-fit if the panel state actually changed (opened or closed)
+      const panelWasOpen = previousSelectedAreaId !== null;
+      const panelIsOpen = selectedAreaId !== null;
+      const panelStateChanged = panelWasOpen !== panelIsOpen;
+      
+      if (panelStateChanged) {
+        // Don't call handleFit() to prevent unwanted map movement
+        // The map should stay at the current zoom level and position when clicking areas
+        
+        // Update the previous selected area ID
+        setPreviousSelectedAreaId(selectedAreaId);
+      } else {
+        // Panel state didn't change, just update the previous selected area ID
+        setPreviousSelectedAreaId(selectedAreaId);
+      }
+    }
+  }, [selectedAreaId, pageDims]); // Trigger when selectedAreaId changes
+
+  useEffect(() => {
+    if (heatmapData.areas) {
+      setLastOccupancyStatus(prev => {
+        const updated = { ...prev };
+        heatmapData.areas.forEach(area => {
+          const occ = (area.occupancy_status || '').toLowerCase();
+          if (occ === 'occupied' || occ === 'unoccupied') {
+            updated[area.area_id || area.id] = occ;
+          }
+        });
+        return updated;
+      });
+    }
+  }, [heatmapData.areas]);
+
+  useEffect(() => {
+    if (heatmapData.areas) {
+      setLastEnergyStatus(prev => {
+        const updated = { ...prev };
+        heatmapData.areas.forEach(area => {
+          const power = area.energy_status;
+          if (power !== null && power !== undefined && power !== 'Unknown') {
+            updated[area.area_id || area.id] = power;
+          }
+        });
+        return updated;
+      });
+    }
+  }, [heatmapData.areas]);
+  useEffect(() => {
+    const q = (searchTerm || '').trim().toLowerCase();
+    if (!q || !heatmapData?.areas?.length) {
+      setHighlightedAreaId(null);
+      return;
+    }
+    
+    // Enhanced search function with better number matching
+    const searchArea = (area) => {
+      const name = (area.name || area.area_name || '').toLowerCase();
+      const code = (area.code || '').toLowerCase();
+      const areaId = (area.area_id || area.id || '').toString().toLowerCase();
+      
+      // Check if search term is a number
+      const isNumeric = /^\d+$/.test(q);
+      
+      if (isNumeric) {
+        // For numeric searches, extract all complete numbers from the text
+        const nameNumbers = name.match(/\d+/g) || [];
+        const codeNumbers = code.match(/\d+/g) || [];
+        const idNumbers = areaId.match(/\d+/g) || [];
+        
+        // Check if the search number exactly matches any complete number in the area NAME only
+        // Examples:
+        // Search "5" → matches areas with ["5", "15", "25", "54", "154"] (any number containing "5")
+        // Search "54" → matches areas with ["54"] only (not "5" or "4" separately)
+        // Search "543" → matches areas with ["543"] only (not "54" or "5" separately)
+        // NOTE: Only search in area name, NOT in area ID
+        const hasExactMatch = nameNumbers.includes(q) || 
+                             codeNumbers.includes(q);
+        return hasExactMatch;
+      } else {
+        // For non-numeric searches, use word-based matching
+        const nameWords = name.split(/\s+/);
+        const codeWords = code.split(/\s+/);
+        
+        // Check if search term matches any complete word
+        return nameWords.some(word => word === q) ||
+               codeWords.some(word => word === q) ||
+               name.includes(q) || 
+               code.includes(q) ||
+               areaId === q;
+      }
+    };
+    
+    // Find all matching areas
+    const matches = heatmapData.areas.filter(searchArea);
+    
+    if (matches.length === 0) {
+      setHighlightedAreaId(null);
+      return;
+    }
+    
+    // For numeric searches, prioritize exact matches
+    const isNumeric = /^\d+$/.test(q);
+    let match;
+    
+    if (isNumeric) {
+      // For numbers, find the most exact match
+      match = matches.find(a => {
+        const name = (a.name || a.area_name || '').toLowerCase();
+        const code = (a.code || '').toLowerCase();
+        const areaId = (a.area_id || a.id || '').toString().toLowerCase();
+        
+        // Prioritize exact ID match, then exact number in name/code
+        if (areaId === q) return true;
+        
+        const nameNumbers = name.match(/\d+/g) || [];
+        const codeNumbers = code.match(/\d+/g) || [];
+        
+        return nameNumbers.includes(q) || codeNumbers.includes(q);
+      }) || matches[0];
+    } else {
+      // For non-numeric searches, prioritize exact word matches
+      match = matches.find(a => {
+        const name = (a.name || a.area_name || '').toLowerCase();
+        const code = (a.code || '').toLowerCase();
+        const nameWords = name.split(/\s+/);
+        const codeWords = code.split(/\s+/);
+        
+        return nameWords.includes(q) || codeWords.includes(q) || name === q || code === q;
+      }) || matches[0];
+    }
+    
+    const hasCoords = Array.isArray(match.coordinates) && match.coordinates.some(pt => typeof pt?.x === 'number' && typeof pt?.y === 'number');
+    if (!hasCoords) {
+      setHighlightedAreaId(null);
+      return;
+    }
+    setHighlightedAreaId(match.area_id || match.id || null);
+    
+    // Trigger continuous bounce animation for searched areas
+    if (matches.length > 0) {
+      setSearchBounceAnimation(true);
+    } else {
+      setSearchBounceAnimation(false);
+    }
+  }, [searchTerm, heatmapData.areas]);
+
+  useEffect(() => {
+    if (areaStatus && areaStatus.zones) {
+      setZoneLocalValues(prev => {
+        const updated = { ...prev };
+        areaStatus.zones.forEach(zone => {
+          if (isSwitched(zone.type)) {
+            updated[zone.id] = {
+              on_off: (zone.status || zone.on_off || 'Off'),
+            };
+          } else {
+            let backendBrightness = 0;
+            if (typeof zone.brightness === 'string') {
+              backendBrightness = parseInt(zone.brightness);
+            } else if (typeof zone.brightness === 'number') {
+              backendBrightness = zone.brightness;
+            }
+
+            let backendCct = 0;
+            if (zone.cct) {
+              backendCct = typeof zone.cct === 'string' ? parseInt(zone.cct) : zone.cct;
+            } else if (zone.temperature) {
+              backendCct = typeof zone.temperature === 'string' ? parseInt(zone.temperature) : zone.temperature;
+            } else if (zone.color_temp) {
+              backendCct = typeof zone.color_temp === 'string' ? parseInt(zone.color_temp) : zone.color_temp;
+            } else {
+              backendCct = 2700;
+            }
+
+            updated[zone.id] = {
+              brightness: backendBrightness,
+              cct: backendCct,
+              fadeTime: zone.fade_time || '02',
+              delayTime: zone.delay_time || '00',
+            };
+          }
+        });
+        return updated;
+      });
+    }
+  }, [areaStatus, selectedAreaId]);
+
+  useEffect(() => {
+    setZonePage(0);
+  }, [selectedAreaId]);
+
+  useEffect(() => {
+    if (areaStatus && areaStatus.zones) {
+      setShadesLocalValues(
+        shades.reduce((acc, shade) => {
+          let val = shade.level;
+          if (typeof val === "string" && val.endsWith("%")) val = parseInt(val);
+          if (typeof val === "string") val = parseInt(val);
+          if (typeof val !== "number" || isNaN(val)) val = 0;
+          acc[shade.id] = Math.round(val); // Round to whole number
+          return acc;
+        }, {})
+      );
+    }
+  }, [areaStatus]);
+
+  useEffect(() => {
+    setFilteredAreas(heatmapData.areas || []);
+  }, [heatmapData.areas]);
+
+  // Compute crop bbox from all area coordinates (trim PDF outer whitespace)
+  useEffect(() => {
+    const all = (heatmapData.areas || [])
+      .flatMap(a => (a.coordinates || [])
+        .filter(pt => typeof pt?.x === 'number' && typeof pt?.y === 'number'));
+    if (!all.length) {
+      setContentBBox(null);
+      return;
+    }
+    const raw = getPolygonBoundingBox(all);
+    const pad = 8;
+    // Use actual PDF dimensions for bounding box calculation, fallback to A4 if not available
+    const maxWidth = pageDims?.width || A4_WIDTH;
+    const maxHeight = pageDims?.height || A4_HEIGHT;
+    const minX = Math.max(0, raw.minX - pad);
+    const minY = Math.max(0, raw.minY - pad);
+    const maxX = Math.min(maxWidth, raw.maxX + pad);
+    const maxY = Math.min(maxHeight, raw.maxY + pad);
+    setContentBBox({ minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY });
+  }, [heatmapData.areas, pageDims]);
+
+  useEffect(() => {
+    if (areaStatus && areaStatus.area_id && selectedFloorId) {
+      const refreshMapData = async () => {
+        try {
+          await dispatch(fetchFloorMapData({ floorId: selectedFloorId }));
+          await dispatch(fetchAreaOccupancyStatus({ floorId: selectedFloorId }));
+          await dispatch(fetchAreaEnergyConsumption({ floorId: selectedFloorId }));
+        } catch (error) {
+          // Failed to refresh map data
+        }
+      };
+
+      const timeoutId = setTimeout(refreshMapData, 1000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [areaStatus?.light_status, areaStatus?.occupancy_status, areaStatus?.active_scene, dispatch, selectedFloorId]);
+
+  const handleZoom = (direction) => {
+    setScale((prev) => {
+      let next = +(prev + direction * SCALE_STEP).toFixed(2);
+      const minScale = isTablet ? MIN_SCALE_TABLET : is2560Screen ? 0.05 : MIN_SCALE;
+      const cap = Math.max(MAX_SCALE, getDynamicMaxScale());
+      next = Math.max(minScale, Math.min(next, cap));
+      return next;
+    });
+  };
+
+  // Center zoom function for zoom controls
+  const handleCenterZoom = (direction) => {
+    // Use the existing handleZoom function instead of handleWheel
+    handleZoom(direction);
+  };
+
+  const getMaxAllowedScale = () => {
+    const container = containerRef.current;
+    if (!container) return 1.0;
+    const maxScaleX = container.offsetWidth / A4_WIDTH;
+    const maxScaleY = container.offsetHeight / A4_HEIGHT;
+    return Math.min(maxScaleX, maxScaleY);
+  };
+
+  const handleFit = () => {
+    const { width: cw, height: ch } = getContainerDimensions();
+    if (!cw || !ch) return;
+
+    // Use actual PDF dimensions if available, otherwise fallback to A4
+    const viewW = pageDims?.width || A4_WIDTH;
+    const viewH = pageDims?.height || A4_HEIGHT;
+
+    // Calculate scale ratios
+    const scaleX = cw / viewW;
+    const scaleY = ch / viewH;
+    
+    let fitScale;
+    
+    // When status panel is open, utilize full space to cover the entire area
+    if (selectedAreaId) {
+      // Zoom out by 2 when status panel is open to prevent cutting edges
+      const marginFactor = 0.75; // Zoom out to fit properly without cutting
+      fitScale = Math.max(scaleX, scaleY) * marginFactor;
+    } else {
+      // Responsive logic for different screen sizes when no status panel
+    if (isMobile || isTablet) {
+      // Mobile/tablet: fit within container with minimal margin
+      const marginFactor = isMobile ? 0.95 : 0.96;
+      fitScale = Math.min(scaleX, scaleY) * marginFactor;
+    } else {
+        // Desktop and large screens: fill to cover entire container
+        const marginFactor = is2560Screen ? 1.0 : is1440Screen ? 1.0 : 1.0;
+      fitScale = Math.max(scaleX, scaleY) * marginFactor;
+    }
+
+      // Apply zoom out factor for better visibility only when no status panel
+      const zoomOutFactor = 0.6;
+    fitScale = fitScale * zoomOutFactor;
+    }
+
+
+    setFitScale(fitScale);
+    setScale(fitScale);
+    setHasFit(true);
+  };
+  const getCentroid = (pts) => {
+    const x = pts.reduce((sum, p) => sum + p.x, 0) / pts.length;
+    const y = pts.reduce((sum, p) => sum + p.y, 0) / pts.length;
+    return { x, y };
+  };
+
+  const getFill = (area) => {
+    if (displayMode === 'Occupancy') {
+      const occ = (area.occupancy_status || '').toLowerCase().trim();
+      if (occ === 'occupied') {
+        // Convert hex to rgba with opacity
+        const hex = occupancyColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        return `rgba(${r}, ${g}, ${b}, 0.5)`;
+      } else if (occ === 'unoccupied') {
+        return 'rgba(95,95,95,0.5)';
+      }
+      return 'transparent';
+    } else if (displayMode === 'Light') {
+      const light = (area.light_status || '').toLowerCase().trim();
+      if (light === 'on') {
+        // Convert hex to rgba with opacity
+        const hex = lightColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        return `rgba(${r}, ${g}, ${b}, 0.5)`;
+      } else if (light === 'off') {
+        return 'rgba(95,95,95,0.5)';
+      }
+      return 'transparent';
+    } else if (displayMode === 'Energy') {
+      // Compute savings percentage using (maxpower - instantaneous) / maxpower * 100
+      const current = Number(area.instantaneous_power);
+      const max = Number(area.instantaneous_max_power);
+      const hasInstant = !Number.isNaN(current) && !Number.isNaN(max) && max > 0;
+
+      let rawPercent;
+      if (hasInstant) {
+        // Calculate savings percentage: (max - current) / max * 100
+        rawPercent = ((max - current) / max) * 100;
+      } else if (
+        area.load_percentage !== null &&
+        area.load_percentage !== undefined &&
+        area.load_percentage !== 'Unknown'
+      ) {
+        // If no instantaneous data, use load_percentage as savings
+        rawPercent = Number(area.load_percentage);
+      }
+
+      // Unknown/undefined/null → transparent; 0 → least tint, 100 → full color
+      if (rawPercent === undefined || Number.isNaN(rawPercent)) {
+        return 'transparent';
+      }
+
+      const pct = Math.min(1, Math.max(0, rawPercent / 100));
+
+      // Use the energy color from API
+      const hex = energyBaseColor.replace('#', '');
+      const [rBase, gBase, bBase] = [
+        parseInt(hex.substr(0, 2), 16),
+        parseInt(hex.substr(2, 2), 16),
+        parseInt(hex.substr(4, 2), 16),
+      ];
+      // Blend with white but keep a minimum presence of the base color at 0%
+      const minBaseWeight = 0.15; // 15% of base color at 0%
+      const baseWeight = minBaseWeight + (1 - minBaseWeight) * pct;
+      const whiteWeight = 1 - baseWeight;
+      const r = Math.round(whiteWeight * 255 + baseWeight * rBase);
+      const g = Math.round(whiteWeight * 255 + baseWeight * gBase);
+      const b = Math.round(whiteWeight * 255 + baseWeight * bBase);
+      return `rgba(${r}, ${g}, ${b}, 0.7)`;
+    }
+    return 'transparent';
+  };
+
+  const handleFloorChange = (direction) => {
+    if (!floors || floors.length === 0) return;
+    
+    // Get available floors for current user
+    const availableFloors = getAvailableFloors();
+    if (availableFloors.length === 0) return;
+    
+    const currentIndex = availableFloors.findIndex(floor => floor.id === selectedFloorId);
+    if (currentIndex === -1) return;
+    
+    let newIndex = currentIndex + direction;
+    if (newIndex < 0) newIndex = availableFloors.length - 1;
+    if (newIndex >= availableFloors.length) newIndex = 0;
+    
+    const newFloorId = availableFloors[newIndex].id;
+    
+    // Check if user can access this floor
+    if (!canAccessFloor(newFloorId)) {
+      return;
+    }
+    
+    dispatch(setSelectedFloorId(newFloorId));
+
+    if (displayMode === "Light") {
+      dispatch(fetchFloorMapData({ floorId: newFloorId }));
+    } else if (displayMode === "Occupancy") {
+      dispatch(fetchAreaOccupancyStatus({ floorId: newFloorId }));
+    } else if (displayMode === "Energy") {
+      dispatch(fetchAreaEnergyConsumption({ floorId: newFloorId }));
+    }
+  };
+
+  const handleAreaClick = (area) => {
+    setSelectedAreaId(area.area_id || area.id);
+    if (!area.area_id) {
+      return;
+    }
+
+    dispatch(fetchAreaStatus(area.area_id));
+
+    if (selectedFloorId) {
+      if (displayMode === "Light") {
+        dispatch(fetchFloorMapData({ floorId: selectedFloorId }));
+      } else if (displayMode === "Occupancy") {
+        dispatch(fetchAreaOccupancyStatus({ floorId: selectedFloorId }));
+      } else if (displayMode === "Energy") {
+        dispatch(fetchAreaEnergyConsumption({ floorId: selectedFloorId }));
+      }
+    }
+  };
+
+
+  const scenes = areaStatus?.area_scenes || [];
+  const totalPages = Math.ceil(scenes.length / SCENES_PER_PAGE);
+  const currentScenes = scenes.slice(scenePage * SCENES_PER_PAGE, (scenePage + 1) * SCENES_PER_PAGE);
+
+  const refreshAllData = async () => {
+    if (!areaStatus?.area_id || !areaStatus?.floor_id) return;
+
+    await Promise.all([
+      dispatch(fetchAreaStatus(areaStatus.area_id)),
+      dispatch(fetchFloorMapData({ floorId: areaStatus.floor_id })),
+      dispatch(fetchAreaEnergyConsumption({ floorId: areaStatus.floor_id })),
+      dispatch(fetchAreaOccupancyStatus({ floorId: areaStatus.floor_id }))
+    ]);
+  };
+
+  const refreshAllDataAndMap = async () => {
+    if (!selectedFloorId) return;
+
+    try {
+      await dispatch(refreshAllHeatmapData({
+        floorId: selectedFloorId,
+        areaId: areaStatus?.area_id || null
+      })).unwrap();
+    } catch (error) {
+      // Failed to refresh heatmap data
+    }
+  };
+
+  const handleManualRefresh = async () => {
+    if (!selectedFloorId) return;
+
+    setRefreshing(true);
+    try {
+      await refreshAllDataAndMap();
+    } catch (error) {
+      // Manual refresh failed
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const handleMainToggle = async () => {
+    if (!areaStatus) return;
+    
+    // Check if user has permission to update area status
+    if (!canUpdateAreaStatus()) {
+      return;
+    }
+    
+    setMainToggleUpdating(true);
+    const newStatus = areaStatus.light_status === 'On' ? 'Off' : 'On';
+    try {
+      await dispatch(toggleAllZonesInArea({ areaId: areaStatus.area_id, action: newStatus })).unwrap();
+      // Only refresh the specific area status since we're toggling all zones in this area
+      // This prevents other areas from showing as "updated" in logs
+      await dispatch(fetchAreaStatus(areaStatus.area_id));
+      await dispatch(fetchProcessors());
+    } catch (e) {
+      // Optionally show error
+    } finally {
+      setMainToggleUpdating(false);
+    }
+  };
+
+  function getDefaultZoneValues(zone) {
+    return {
+      brightness: parseInt(zone.brightness) || 0,
+      cct: zone.cct || zone.color_temp || 1600,
+      fadeTime: '02',
+      delayTime: '00',
+    };
+  }
+
+  function handleZoneValueChange(zoneId, changed) {
+    setZoneLocalValues(prev => ({
+      ...prev,
+      [zoneId]: { ...prev[zoneId], ...changed },
+    }));
+  }
+
+  async function handleApplyZones() {
+    // Check if user has permission to update area status
+    if (!canUpdateAreaStatus()) {
+      return;
+    }
+    
+    setZoneUpdating(true);
+
+    const zonesToUpdate = areaStatus.zones.slice(zonePage * ZONES_PER_PAGE, (zonePage + 1) * ZONES_PER_PAGE).map(zone => {
+      const values = zoneLocalValues[zone.id] || { on_off: zone.status || zone.on_off || 'Off' };
+
+      if (isSwitched(zone.type)) {
+        const localOnOff = values.on_off ?? (zone.on_off || zone.status);
+        return {
+          zone_id: zone.id,
+          zone_type: "Switched",
+          switched_state: localOnOff
+        };
+      }
+
+      if (isDimmed(zone.type)) {
+        return {
+          zone_id: zone.id,
+          zone_type: "Dimmed",
+          level: Number(values.brightness),
+          fade_time: values.fadeTime || "02",
+          delay_time: values.delayTime || "00"
+        };
+      }
+
+      if (isWhitening(zone.type)) {
+        return {
+          zone_id: zone.id,
+          zone_type: "WhiteTune",
+          level: Number(values.brightness),
+          kelvin: Number(values.cct),
+          fade_time: values.fadeTime || "02",
+          delay_time: values.delayTime || "00"
+        };
+      }
+
+      return {
+        zone_id: zone.id,
+        zone_type: zone.type || "Unknown",
+        ...values
+      };
+    });
+
+    try {
+      await dispatch(updateZonesByArea({
+        areaId: selectedAreaId,
+        zones: zonesToUpdate,
+      })).unwrap();
+
+      // Only refresh the specific area status, not all heatmap data
+      // This prevents all zones from showing as "updated" in logs
+      await dispatch(fetchAreaStatus(selectedAreaId));
+
+    } catch (e) {
+      // Optionally show error
+    } finally {
+      setZoneUpdating(false);
+    }
+  }
+
+  const selectedAreaObj = heatmapData.areas?.find(
+    a => (a.area_id || a.id) === selectedAreaId
+  );
+
+  const fetchSettingsApi = async (areaId) => {
+    return {
+      locked: false,
+      mode: "Auto",
+      selectedScene: 1,
+      scenes: [
+        { id: 1, name: "Scene 1" },
+        { id: 2, name: "Scene 2" }
+      ],
+      zones: [
+        { id: 1, name: "Downlight", brightness: 40, brightnessMin: 0, brightnessMax: 100 },
+        { id: 2, name: "Front Row", brightness: 60, brightnessMin: 0, brightnessMax: 100 }
+      ]
+    };
+  };
+
+  const handleShadeSlider = (id, value) => {
+    setShadesLocalValues(prev => ({
+      ...prev,
+      [id]: Math.round(value), // Round to whole number
+    }));
+  };
+
+  const handleShadesPreset = (percent) => {
+    setShadesLocalValues(
+      shades.reduce((acc, shade) => {
+        acc[shade.id] = percent;
+        return acc;
+      }, {})
+    );
+  };
+
+  const handleApplyShades = async () => {
+    // Check if user has permission to update area status
+    if (!canUpdateAreaStatus()) {
+      return;
+    }
+    
+    setShadesUpdating(true);
+    try {
+      const shadesToUpdate = Object.entries(shadesLocalValues).map(([id, position]) => ({
+        zone_id: id,
+        zone_type: "Shade",
+        level: position
+      }));
+      await dispatch(updateZonesByArea({
+        areaId: areaStatus.area_id,
+        zones: shadesToUpdate,
+      })).unwrap();
+
+      // Only refresh the specific area status, not all heatmap data
+      // This prevents all zones from showing as "updated" in logs
+      await dispatch(fetchAreaStatus(areaStatus.area_id));
+    } catch (e) {
+      // Optionally show error
+    } finally {
+      setShadesUpdating(false);
+    }
+  };
+
+  if (!selectedFloorId) {
+    return (
+      <Box sx={{
+        width: '90vw',
+        height: '90vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        {/* You can put a placeholder or just leave it empty */}
+      </Box>
+    );
+  }
+
+  const switchedZones = areaStatus?.zones?.filter(z => isSwitched(z.type)) || [];
+  const whiteTuneZones = areaStatus?.zones?.filter(z => isWhitening(z.type)) || [];
+  const dimmedZones = areaStatus?.zones?.filter(z => isDimmed(z.type)) || [];
+
+  let zonesToShow = [];
+  let zonesPerPage = ZONES_PER_PAGE;
+  
+  // Smart zone display logic based on content and screen size
+  if (whiteTuneZones.length > 0 || dimmedZones.length > 0) {
+    // Order zones to prioritize CCT zones first, then dimmer zones
+    // This ensures that on large screens, if there are 2 CCT + 2 dimmer,
+    // the first page will show 2 CCT + 1 dimmer (3 total)
+    zonesToShow = [...whiteTuneZones, ...dimmedZones];
+    
+    // For large screens (>= 1440px) - show 3 zones per page
+    if (is1440Screen || isUltraWide || is2560Screen) {
+      zonesPerPage = 3;
+    } else {
+      // For laptop/tablet/mobile (< 1440px) - show 1 zone at a time with pagination
+      zonesPerPage = 1;
+    }
+  } else {
+    zonesToShow = switchedZones;
+    
+    // For large screens and desktop (>= 1440px)
+    if (is1440Screen || isUltraWide || is2560Screen) {
+      // Show 3 zones by default for large screens/desktop
+      zonesPerPage = 3;
+    } else {
+      // For laptop/tablet/mobile (< 1440px), show 1 zone at a time with pagination
+      zonesPerPage = 1;
+    }
+  }
+  const totalZonePages = Math.ceil(zonesToShow.length / zonesPerPage);
+  
+
+  const navIconSx = {
+    bgcolor: '#fff',
+    borderRadius: '50%',
+    boxShadow: 1,
+    width: { xs: 24, md: 28 },
+    height: { xs: 24, md: 28 },
+    minWidth: { xs: 24, md: 28 },
+    minHeight: { xs: 24, md: 28 },
+    p: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    '&:hover': { bgcolor: '#eee' }
+  };
+
+  return (
+    <>
+      {/* CSS Animation for continuous search bounce - centered scale only */}
+      <style>
+        {`
+          @keyframes searchBounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.98); }
+            100% { transform: scale(1); }
+          }
+        `}
+      </style>
+      <Box
+        ref={layoutRef}
+        sx={{
+          width: '100%',
+          height: availableHeight ? `${availableHeight}px` : '100vh',
+          display: 'flex',
+          flexDirection: 'row',
+          overflow: 'hidden',
+          p: 0,
+          m: 0,
+          bgcolor: '#fff',
+          // Ensure no gaps between columns
+          gap: 0,
+          // Force full width utilization
+          maxWidth: '100%',
+          boxSizing: 'border-box',
+        }}
+      >
+      {/* Heatmap and Legends/Navigation Column */}
+      <Box
+        sx={{
+          flex: '1 1 100%', // Always take full available space
+          minWidth: 0,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          p: 0,
+          m: 0,
+          position: 'relative',
+          overflow: 'hidden',
+          bgcolor: '#fff',
+          // Force the heatmap to utilize all available space
+          width: '100%',
+          maxWidth: '100%',
+          // Additional properties to ensure full space utilization
+          flexGrow: 1,
+          flexShrink: 1,
+          flexBasis: '100%',
+        }}
+      >
+        {/* Map Area - fills all available vertical space except for legends/nav */}
+        <Box
+          ref={containerRef}
+          sx={{
+            flex: '1 1 auto',
+            minHeight: 0,
+            minWidth: 0,
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 0,
+            m: 0,
+            position: 'relative',
+            overflow: 'hidden',
+            bgcolor: '#fff',
+            // Ensure the container takes full available space
+            flexGrow: 1,
+            flexShrink: 1,
+            // Force the container to use all available width and height
+            maxWidth: '100%',
+            maxHeight: '100%',
+            // Additional properties to ensure full space utilization
+            flexBasis: '100%',
+            alignSelf: 'stretch',
+          }}
+        >
+          <HeatmapPdfSvgViewer
+            pdfUrl={pdfUrl}
+            pageDims={pageDims}
+            setPageDims={setPageDims}
+            scale={scale}
+            setScale={setScale}
+            hasFit={hasFit}
+            handleFit={handleFit}
+            areas={filteredAreas}
+            getFill={getFill}
+            handleAreaClick={handleAreaClick}
+            searchTerm={searchTerm}
+            pan={pan}
+            setPan={setPan}
+            isDragging={isDragging}
+            setIsDragging={setIsDragging}
+            dragStart={dragStart}
+            setDragStart={setDragStart}
+            contentBBox={contentBBox}
+            containerFitMode
+            highlightedAreaId={highlightedAreaId}
+            searchBounceAnimation={searchBounceAnimation}
+          />
+          {/* Zoom Controls - bottom-left */}
+          <Box sx={{ position: 'absolute', left: 16, bottom: 16, zIndex: 10 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+              <IconButton onClick={() => handleCenterZoom(1)} disabled={scale >= 5.0} size={isMobile ? 'small' : 'medium'}>
+                <ZoomInIcon fontSize={isMobile ? 'small' : 'medium'} />
+              </IconButton>
+              <IconButton onClick={() => handleCenterZoom(-1)} disabled={scale <= 0.1} size={isMobile ? 'small' : 'medium'}>
+                <ZoomOutIcon fontSize={isMobile ? 'small' : 'medium'} />
+              </IconButton>
+              <IconButton 
+                onClick={() => {
+                  // Manual fit button - reset to fit scale and center position
+                  setScale(fitScale);
+                  setPan({ x: 0, y: 0 });
+                }} 
+                size={isMobile ? 'small' : 'medium'}
+                title="Reset to fit position"
+              >
+                <FitScreenIcon fontSize={isMobile ? 'small' : 'medium'} />
+              </IconButton>
+            </Box>
+          </Box>
+
+        </Box>
+        {/* Legends and Floor navigation aligned on one line */}
+        <Box
+          sx={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: { xs: 0.5, sm: 1 },
+            minHeight: 32, // Reduced from 36 to 32
+            bgcolor: 'transparent',
+            px: { xs: 0.5, sm: 1 },
+            position: 'relative',
+            zIndex: 5,
+            flexShrink: 0,
+            mt: 0.25, // Reduced from 0.5 to 0.25
+            alignSelf: 'flex-end',
+            py: 0.25, // Reduced from 0.5 to 0.25
+            minWidth: { xs: 200, sm: 250, md: 300 }, // Reduced to allow more flexible space usage
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
+          }}
+        >
+          {/* Legends on the LEFT side */}
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: { xs: 0.3, sm: 0.5, md: 0.7, lg: 0.9 }, // Reduced gap
+            // White background box for legends as shown in image
+            bgcolor: '#fff',
+            px: { xs: 0.35, sm: 0.5, md: 0.7, lg: 0.8 }, // Reduced padding
+            py: { xs: 0.15, sm: 0.2, md: 0.25, lg: 0.3 }, // Reduced padding
+            borderRadius: 0.8,
+            boxShadow: 1,
+            border: '1px solid #ddd',
+            flexWrap: { xs: 'wrap', sm: 'nowrap' },
+            justifyContent: 'flex-start',
+            // Ensure it stays on the left
+            alignSelf: 'flex-start',
+            ml: 0, // No left margin
+          }}>
+            {displayMode === 'Light' && (
+              <>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}> {/* Reduced gap */}
+                  <Box sx={{
+                    width: { xs: 12, sm: 14, md: 16, lg: 18, xl: 20 },
+                    height: { xs: 12, sm: 14, md: 16, lg: 18, xl: 20 },
+                    bgcolor: lightColor,
+                    opacity: 0.5,
+                    border: '1px solid #000'
+                  }} /> {/* Reduced size */}
+                  <Typography variant="body2" sx={{ color: '#000', fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.5rem', md: '0.6rem', lg: '0.7rem', xl: '0.8rem' } }}>Light On</Typography> {/* Reduced font size */}
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}> {/* Reduced gap */}
+                  <Box sx={{ width: { xs: 12, sm: 14, md: 16, lg: 18, xl: 20 }, height: { xs: 12, sm: 14, md: 16, lg: 18, xl: 20 }, bgcolor: 'rgba(95,95,95,0.5)', border: '1px solid #000' }} /> {/* Reduced size */}
+                  <Typography variant="body2" sx={{ color: '#000', fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.5rem', md: '0.6rem', lg: '0.7rem', xl: '0.8rem' } }}>Light Off</Typography> {/* Reduced font size */}
+                </Box>
+              </>
+            )}
+            {displayMode === 'Occupancy' && (
+              <>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}> {/* Reduced gap */}
+                  <Box sx={{
+                    width: { xs: 12, sm: 14, md: 16, lg: 18, xl: 20 },
+                    height: { xs: 12, sm: 14, md: 16, lg: 18, xl: 20 },
+                    bgcolor: occupancyColor,
+                    opacity: 0.5,
+                    border: '1px solid #000'
+                  }} /> {/* Reduced size */}
+                  <Typography variant="body2" sx={{ color: '#000', fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.5rem', md: '0.6rem', lg: '0.7rem', xl: '0.8rem' } }}>Occupied</Typography> {/* Reduced font size */}
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}> {/* Reduced gap */}
+                  <Box sx={{ width: { xs: 12, sm: 14, md: 16, lg: 18, xl: 20 }, height: { xs: 12, sm: 14, md: 16, lg: 18, xl: 20 }, bgcolor: 'rgba(95,95,95,0.5)', border: '1px solid #000' }} /> {/* Reduced size */}
+                  <Typography variant="body2" sx={{ color: '#000', fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.5rem', md: '0.6rem', lg: '0.7rem', xl: '0.8rem' } }}>Unoccupied</Typography> {/* Reduced font size */}
+                </Box>
+              </>
+            )}
+            {displayMode === 'Energy' && (
+              <>
+                <Typography variant="body2" sx={{ color: '#000', fontWeight: 600, fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem', lg: '0.9rem', xl: '1rem' }, mr: 0.5 }}>Energy Savings:</Typography>
+                <Box sx={{
+                  width: { xs: 12, sm: 14, md: 16, lg: 18, xl: 20 },
+                  height: { xs: 12, sm: 14, md: 16, lg: 18, xl: 20 },
+                  bgcolor: energyBaseColor,
+                  border: '1px solid #000'
+                }} /> {/* Reduced size */}
+                <Typography variant="body2" sx={{ color: '#000', fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.5rem', md: '0.6rem', lg: '0.7rem', xl: '0.8rem' } }}>High</Typography> {/* Reduced font size */}
+                <Box sx={{
+                  width: { xs: 12, sm: 14, md: 16, lg: 18, xl: 20 },
+                  height: { xs: 12, sm: 14, md: 16, lg: 18, xl: 20 },
+                  bgcolor: energyBaseColor,
+                  opacity: 0.6,
+                  border: '1px solid #000'
+                }} /> {/* Reduced size */}
+                <Typography variant="body2" sx={{ color: '#000', fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.5rem', md: '0.6rem', lg: '0.7rem', xl: '0.8rem' } }}>Medium</Typography> {/* Reduced font size */}
+                <Box sx={{
+                  width: { xs: 12, sm: 14, md: 16, lg: 18, xl: 20 },
+                  height: { xs: 12, sm: 14, md: 16, lg: 18, xl: 20 },
+                  bgcolor: energyBaseColor,
+                  opacity: 0.3,
+                  border: '1px solid #000'
+                }} /> {/* Reduced size */}
+                <Typography variant="body2" sx={{ color: '#000', fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.5rem', md: '0.6rem', lg: '0.7rem', xl: '0.8rem' } }}>Low</Typography> {/* Reduced font size */}
+              </>
+            )}
+          </Box>
+
+          {/* Floor navigation on the RIGHT side */}
+          {floors && floors.length > 0 && (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',               // keep in one line
+                justifyContent: 'center',
+                gap: { xs: 0.8, sm: 1, md: 1.2, lg: 1.5 },
+                minHeight: 32,
+                flexWrap: 'nowrap',                  // no wrapping
+                alignSelf: 'flex-end',
+                mr: 0,
+              }}
+            >
+              {/* Previous Floor inline: arrow + label */}
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}
+                onClick={() => handleFloorChange(-1)}
+              >
+                <IconButton
+                  disableRipple
+                  sx={{
+                    p: 0,
+                    color: '#000',
+                    bgcolor: 'transparent',
+                    '&:hover': { bgcolor: 'transparent' },
+                  }}
+                >
+                  <ArrowBackIcon fontSize={isMobile ? 'small' : 'medium'} />
+                </IconButton>
+                <Typography
+                  sx={{
+                    fontWeight: 'bold',
+                    color: '#000',
+                    textDecoration: 'underline',
+                    fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.85rem', lg: '0.9rem', xl: '1rem' },
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Previous Floor
+                </Typography>
+              </Box>
+
+              <Typography sx={{ fontWeight: 'bold', color: '#000', mx: { xs: 0.5, sm: 0.8 } }}>|</Typography>
+
+              {/* Next Floor inline: label + arrow */}
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}
+                onClick={() => handleFloorChange(1)}
+              >
+                <Typography
+                  sx={{
+                    fontWeight: 'bold',
+                    color: '#000',
+                    textDecoration: 'underline',
+                    fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.85rem', lg: '0.9rem', xl: '1rem' },
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Next Floor
+                </Typography>
+                <IconButton
+                  disableRipple
+                  sx={{
+                    p: 0,
+                    color: '#000',
+                    bgcolor: 'transparent',
+                    '&:hover': { bgcolor: 'transparent' },
+                  }}
+                >
+                  <ArrowForwardIcon fontSize={isMobile ? 'small' : 'medium'} />
+                </IconButton>
+              </Box>
+            </Box>
+          )}
+        </Box>
+      </Box>
+      {/* Status Panel - responsive based on screen size */}
+      {selectedAreaId && (
+        <Box
+          sx={{
+            flex: '0 0 auto', // Don't grow or shrink, maintain fixed width
+            width: {
+              xs: '28%',  // Mobile - slightly wider for better usability
+              sm: '25%',  // Small tablets
+              md: '22%',  // Medium screens
+              lg: '20%',  // Large screens
+              xl: '18%'   // Ultra-wide screens
+            },
+            minWidth: {
+              xs: 280,  // Mobile minimum width
+              sm: 300,  // Small tablet minimum width
+              md: 320,  // Medium screen minimum width
+              lg: 360,  // Large screen minimum width
+              xl: 400   // Ultra-wide minimum width
+            },
+            maxWidth: {
+              xs: 320,  // Mobile maximum width
+              sm: 350,  // Small tablet maximum width
+              md: 380,  // Medium screen maximum width
+              lg: 420,  // Large screen maximum width
+              xl: 480   // Ultra-wide maximum width
+            },
+            height: '100%', // Same height as floorplan
+            display: 'flex',
+            flexDirection: 'column',
+            overflowY: 'auto',
+            minHeight: 0,
+            boxShadow: '-2px 0 8px rgba(0,0,0,0.10)',
+            background: '#a89e87',
+            overflow: 'hidden',
+            p: 0,
+            m: 0,
+            boxSizing: 'border-box',
+            zIndex: 2,
+            transition: 'width 0.3s',
+            borderRadius: '10px 0 0 10px',
+            position: 'static',
+          }}
+        >
+          {/* Header */}
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: { xs: 1, sm: 1.5, md: 2 },
+            py: { xs: 0.5, sm: 0.75, md: 1 },
+            minHeight: { xs: 25, sm: 28, md: 32 },
+            bgcolor: '#a89e87',
+            flexShrink: 0,
+            width: '100%',
+            gap: 1, // Add gap between elements
+          }}>
+            {/* Left side with toggle and area name */}
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5, // Reduced gap
+              flex: 1,
+              minWidth: 0,
+              overflow: 'hidden' // Ensure container doesn't overflow
+            }}>
+              {areaStatus && (
+                <MainAreaToggle
+                  isOn={areaStatus.light_status === 'On'}
+                  onClick={handleMainToggle}
+                  isMobile={isMobile}
+                  disabled={!canUpdateAreaStatus()}
+                />
+              )}
+              <Typography
+                fontWeight={400}
+                fontSize={{ xs: 7, sm: 8, md: 9, lg: 10 }} // Further reduced font sizes
+                sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  flex: 1,
+                  minWidth: 0,
+                  maxWidth: '100%', // Ensure it doesn't exceed container
+                  lineHeight: 1.2, // Tighter line height
+                }}
+              >
+                {areaStatus?.area_name || selectedAreaObj?.name || selectedAreaObj?.area_name || 'Zone'}
+              </Typography>
+            </Box>
+
+            {/* Right side with icons */}
+            <Box sx={{
+              display: 'flex',
+              gap: 0.5,
+              flexShrink: 0,
+              alignItems: 'center'
+            }}>
+              {canViewAreaSettings() && (
+              <IconButton
+                size="small"
+                  onClick={() => {
+                    // Check if user has any permissions before opening settings
+                    if (canViewAreaSettings()) {
+                      setSettingsOpen(true);
+                    }
+                  }}
+                sx={{
+                  fontSize: { xs: 12, sm: 14, md: 16, lg: 18 }, // Reduced icon sizes
+                    p: { xs: 0.2, sm: 0.3, md: 0.4, lg: 0.5 }, // Reduced padding
+                }}
+                  title="Area Settings"
+              >
+                <SettingsIcon fontSize={isMobile ? 'small' : 'medium'} />
+              </IconButton>
+              )}
+              <IconButton
+                size="small"
+                onClick={() => setSelectedAreaId(null)}
+                sx={{
+                  fontSize: { xs: 12, sm: 14, md: 16, lg: 18 }, // Reduced icon sizes
+                  p: { xs: 0.2, sm: 0.3, md: 0.4, lg: 0.5 } // Reduced padding
+                }}
+              >
+                <CloseIcon fontSize={isMobile ? 'small' : 'medium'} />
+              </IconButton>
+            </Box>
+          </Box>
+
+          {/* Main Content - Full height without scrolling */}
+          <Box sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+            gap: { xs: 0.1, sm: 0.15, md: 0.2, lg: 0.25 },
+            p: { xs: 0.5, sm: 0.75, md: 1 },
+            boxSizing: 'border-box',
+            position: 'relative',
+            overflowY: 'auto'
+          }}>
+            {areaStatusLoading ? (
+              <Box sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: 'rgba(168,158,135,0.7)',
+                zIndex: 10
+              }}>
+                <CircularProgress size={isMobile ? 24 : 36} />
+              </Box>
+            ) : (
+              <>
+                {/* Scene Section */}
+                <Box sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'stretch',
+                  bgcolor: '#807864',
+                  borderRadius: 0,
+                  minHeight: { xs: 45, sm: 50, md: 55, lg: 60, xl: 60 },
+                  flexShrink: 0,
+                  p: 0,
+                  m: 0,
+                  boxSizing: 'border-box',
+                }}>
+                  <Box sx={{
+                    writingMode: 'vertical-rl',
+                    fontWeight: 'bold',
+                    fontSize: { xs: 8, sm: 9, md: 10, lg: 12 },
+                    color: '#222',
+                    px: { xs: 0.3, sm: 0.4, md: 0.5 },
+                    py: 0.2,
+                    minWidth: { xs: 16, sm: 18, md: 20, lg: 24 },
+                    textAlign: 'center',
+                    bgcolor: '#fff',
+                    borderRadius: '0 12px 12px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transform: 'rotate(180deg)',
+                  }}>
+                    Scene
+                  </Box>
+                  <Box sx={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    p: { xs: 0.5, md: 1 },
+                    minHeight: 0,
+                    overflow: 'hidden',
+                  }}>
+                    {/* Left arrow */}
+                    {scenePage > 0 && (
+                      <IconButton
+                        size="small"
+                        onClick={() => setScenePage(scenePage - 1)}
+                        sx={{ ...navIconSx, mr: 0.5 }}
+                      >
+                        <ArrowBackIosNewIcon sx={{ color: '#222', fontSize: { xs: 14, md: 18 } }} />
+                      </IconButton>
+                    )}
+
+                    {/* Scene Grid */}
+                    <Box sx={{
+                      flex: 1,
+                      display: 'grid',
+                      gridTemplateColumns: {
+                        xs: 'repeat(2, 1fr)',
+                        sm: 'repeat(3, 1fr)'
+                      },
+                      gridTemplateRows: 'repeat(3, 1fr)',
+                      gap: { xs: 0.15, sm: 0.2, md: 0.25, lg: 0.3 },
+                      minHeight: 0,
+                    }}>
+                      {(areaStatus && Array.isArray(areaStatus.area_scenes) ? areaStatus.area_scenes : [])
+                        .slice(scenePage * SCENES_PER_PAGE, (scenePage + 1) * SCENES_PER_PAGE)
+                        .map((scene, idx) => (
+                          <Button
+                            key={scene.id}
+                            size="small"
+                            variant={scene.id === areaStatus?.active_scene ? "contained" : "outlined"}
+                            disabled={!canUpdateAreaStatus()}
+                            sx={{
+                              fontSize: { xs: 7, sm: 8, md: 9, lg: 10 },
+                              minWidth: 0,
+                              p: { xs: 0.05, sm: 0.1, md: 0.15, lg: 0.2 },
+                              borderRadius: 1,
+                              height: { xs: 16, sm: 18, md: 20, lg: 22 },
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              background: scene.id === areaStatus?.active_scene ? '#222' : '#fff',
+                              color: scene.id === areaStatus?.active_scene ? '#fff' : '#222',
+                              border: scene.id === areaStatus?.active_scene ? 'none' : '1px solid #222',
+                              fontWeight: scene.id === areaStatus?.active_scene ? 700 : 400,
+                              maxWidth: { xs: 50, sm: 55, md: 60, lg: 70 },
+                              textTransform: 'uppercase',
+                              opacity: !canUpdateAreaStatus() ? 0.5 : 1,
+                              cursor: !canUpdateAreaStatus() ? 'not-allowed' : 'pointer',
+                            }}
+                            onClick={async () => {
+                              if (!areaStatus?.area_id || scene.id == null) return;
+                              
+                              // Check if user has permission to update area status
+                              if (!canUpdateAreaStatus()) {
+                                return;
+                              }
+                              
+                              try {
+                                await dispatch(updateAreaScene({
+                                  area_id: areaStatus.area_id,
+                                  scene_code: scene.id
+                                })).unwrap();
+                                // Only refresh the specific area status, not all heatmap data
+                                // This prevents all zones from showing as "updated" in logs
+                                await dispatch(fetchAreaStatus(areaStatus.area_id));
+                              } catch (e) { }
+                            }}
+                          >
+                            <span style={{
+                              display: 'block',
+                              width: '100%',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}>
+                              {scene.name}
+                            </span>
+                          </Button>
+                        ))}
+                    </Box>
+
+                    {/* Right arrow */}
+                    {areaStatus && Array.isArray(areaStatus.area_scenes) && (scenePage + 1) * SCENES_PER_PAGE < areaStatus.area_scenes.length && (
+                      <IconButton
+                        size="small"
+                        onClick={() => setScenePage(scenePage + 1)}
+                        sx={{ ...navIconSx, ml: 0.5 }}
+                      >
+                        <ArrowForwardIosIcon sx={{ color: '#222', fontSize: { xs: 14, md: 18 } }} />
+                      </IconButton>
+                    )}
+                  </Box>
+                </Box>
+
+                {/* Zones Section - responsive height based on screen size */}
+                <Box sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'stretch',
+                  bgcolor: '#807864',
+                  borderRadius: 0,
+                  minHeight: { 
+                    xs: 65,   // Mobile
+                    sm: 80,   // Small tablet
+                    md: 100,  // Laptop - compact for 1 zone with pagination
+                    lg: 120,  // Large screen - slightly taller for better visibility
+                    xl: 150   // Ultra-wide screen - taller for 3 zones
+                  },
+                  flexShrink: 0,
+                  p: 0,
+                  m: 0,
+                  boxSizing: 'border-box',
+                }}>
+                  <Box sx={{
+                    writingMode: 'vertical-rl',
+                    fontWeight: 'bold',
+                    fontSize: { xs: 8, sm: 9, md: 10, lg: 12 },
+                    color: '#222',
+                    px: { xs: 0.3, sm: 0.4, md: 0.5 },
+                    py: 0.2,
+                    minWidth: { xs: 16, sm: 18, md: 20, lg: 24 },
+                    textAlign: 'center',
+                    bgcolor: '#fff',
+                    borderRadius: '0 12px 12px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transform: 'rotate(180deg)',
+                    mr: { xs: 0.5, md: 1 },
+                  }}>
+                    Zones
+                  </Box>
+                  <Box sx={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    p: { xs: 0.5, md: 1 },
+                    minHeight: 0,
+                    position: 'relative',
+                    gap: { xs: 0.5, md: 1 },
+                  }}>
+                    {/* Zone controls */}
+                    <Box sx={{
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column', // Always use column layout to utilize full height
+                      gap: { xs: 0.3, md: 0.5, lg: 0.8, xl: 1.0 }, // Responsive gap
+                      justifyContent: 'flex-start',
+                      alignItems: 'center',
+                      minHeight: 0,
+                      overflow: 'hidden',
+                    }}>
+                      {zonesToShow.length > 0 ? (
+                        <>
+                          {zonesToShow
+                            .slice(zonePage * zonesPerPage, (zonePage + 1) * zonesPerPage)
+                            .map((zone, idx) => {
+                              const values = zoneLocalValues[zone.id] || getDefaultZoneValues(zone);
+                              return (
+                                <ZoneControlCard
+                                  key={zone.id}
+                                  zone={zone}
+                                  values={values}
+                                  onChange={(changed) => handleZoneValueChange(zone.id, changed)}
+                                  disabled={zoneUpdating || !canUpdateAreaStatus()}
+                                  isMobile={isMobile}
+                                  isTablet={isTablet}
+                                  isDesktop={isDesktop}
+                                  isLargeScreen={isLargeScreen}
+                                  is1440Screen={is1440Screen}
+                                  isUltraWide={isUltraWide}
+                                  is2560Screen={is2560Screen}
+                                />
+                              );
+                            })}
+                          <Box sx={{ 
+                            display: 'flex', 
+                            justifyContent: 'flex-end', 
+                            width: '100%',
+                            mt: 1
+                          }}>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              onClick={handleApplyZones}
+                              disabled={zoneUpdating || !canUpdateAreaStatus()}
+                              sx={{
+                                ...applyButtonSx,
+                                opacity: !canUpdateAreaStatus() ? 0.5 : 1,
+                                cursor: !canUpdateAreaStatus() ? 'not-allowed' : 'pointer',
+                              }}
+                            >
+                              {zoneUpdating ? 'Applying...' : 'Apply'}
+                            </Button>
+                          </Box>
+                        </>
+                      ) : (
+                        <Typography
+                          color="#fff"
+                          fontSize={{ xs: 12, md: 15 }}
+                        >
+                          No zones available
+                        </Typography>
+                      )}
+                    </Box>
+
+                    {/* Pagination arrows */}
+                    {totalZonePages > 1 && (
+                      <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '100%',
+                        gap: 0.5,
+                        minWidth: 40,
+                      }}>
+                        {zonePage > 0 ? (
+                          <IconButton
+                            size="small"
+                            onClick={() => setZonePage(zonePage - 1)}
+                            sx={{ ...navIconSx }}
+                          >
+                            <ArrowBackIosNewIcon sx={{ color: '#222', fontSize: { xs: 14, md: 18 } }} />
+                          </IconButton>
+                        ) : zonePage < totalZonePages - 1 ? (
+                          <IconButton
+                            size="small"
+                            onClick={() => setZonePage(zonePage + 1)}
+                            sx={{ ...navIconSx }}
+                          >
+                            <ArrowForwardIosIcon sx={{ color: '#222', fontSize: { xs: 14, md: 18 } }} />
+                          </IconButton>
+                        ) : null}
+                      </Box>
+                    )}
+                  </Box>
+                </Box>
+
+                {/* Occupancy Section */}
+                <Box sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'stretch',
+                  bgcolor: '#807864',
+                  borderRadius: 0,
+                  minHeight: { xs: 35, sm: 40, md: 45, lg: 45, xl: 45 },
+                  flexShrink: 0,
+                  p: 0,
+                  m: 0,
+                  boxSizing: 'border-box',
+                }}>
+                  <Box sx={{
+                    writingMode: 'vertical-rl',
+                    fontWeight: 'bold',
+                    fontSize: { xs: 10, md: 12 },
+                    color: '#222',
+                    px: 0.5,
+                    py: 0.2,
+                    minWidth: { xs: 20, md: 24 },
+                    textAlign: 'center',
+                    bgcolor: '#fff',
+                    borderRadius: '0 12px 12px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transform: 'rotate(180deg)',
+                    mr: 1,
+                  }}>
+                    Occupancy
+                  </Box>
+                  <Box sx={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    p: { xs: 0.5, md: 1 },
+                    minHeight: 0,
+                  }}>
+                    {areaStatusLoading || !areaStatus ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                        <CircularProgress size={isMobile ? 16 : 20} />
+                      </Box>
+                    ) : (
+                      <>
+                        {areaStatus.occupancy_status === 'Occupied' && (
+                          <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: { xs: 0.3, md: 0.5 }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <PersonIcon sx={{ fontSize: { xs: 20, md: 25 }, color: '#222' }} />
+                            <CheckCircleIcon sx={{ fontSize: { xs: 12, md: 15 }, color: '#222', ml: -0.7, mt: 0.7 }} />
+                          </Box>
+                        )}
+                        {areaStatus.occupancy_status === 'Unoccupied' && (
+                          <Box sx={{ bgcolor: '#fff', borderRadius: 2, p: { xs: 0.3, md: 0.5 }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <PersonIcon sx={{ fontSize: { xs: 20, md: 25 }, color: '#222' }} />
+                            <CancelIcon sx={{ fontSize: { xs: 12, md: 15 }, color: '#d32f2f', ml: -0.7, mt: 0.7 }} />
+                          </Box>
+                        )}
+                        <Typography fontSize={{ xs: 11, md: 13 }} color="#fff" fontWeight="normal">
+                          {areaStatus.occupancy_status || 'Unknown'}
+                        </Typography>
+                      </>
+                    )}
+                  </Box>
+                </Box>
+
+                {/* Energy Section */}
+                <Box sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'stretch',
+                  bgcolor: '#807864',
+                  borderRadius: 0,
+                  minHeight: { xs: 45, sm: 50, md: 55, lg: 55, xl: 55 },
+                  flexShrink: 0,
+                  p: 0,
+                  m: 0,
+                  boxSizing: 'border-box',
+                }}>
+                  <Box sx={{
+                    writingMode: 'vertical-rl',
+                    fontWeight: 'bold',
+                    fontSize: { xs: 10, md: 12 },
+                    color: '#222',
+                    px: 0.5,
+                    py: 0.2,
+                    minWidth: { xs: 20, md: 24 },
+                    textAlign: 'center',
+                    bgcolor: '#fff',
+                    borderRadius: '0 12px 12px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transform: 'rotate(180deg)',
+                    mr: 1,
+                  }}>
+                    Energy
+                  </Box>
+                  <Box sx={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-around',
+                    p: { xs: 0.5, md: 1 },
+                    minHeight: 0,
+                  }}>
+                    {areaStatusLoading || !areaStatus ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                        <CircularProgress size={isMobile ? 16 : 20} />
+                      </Box>
+                    ) : (
+                      <>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: { xs: 60, md: 80 } }}>
+                          <Typography fontSize={{ xs: 10, md: 12 }} color="#fff" fontWeight="normal" letterSpacing={1}>Consumption</Typography>
+                          <Typography fontSize={{ xs: 10, md: 12 }} color="#fff" fontWeight="bold" mt={0.5}>
+                            {selectedAreaObj?.instantaneous_power !== undefined && selectedAreaObj?.instantaneous_power !== null
+                              ? `${selectedAreaObj.instantaneous_power} W`
+                              : 'Unknown'}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: { xs: 60, md: 80 } }}>
+                          <Typography fontSize={{ xs: 10, md: 12 }} color="#fff" fontWeight="normal" letterSpacing={1}>Savings</Typography>
+                          <Typography fontSize={{ xs: 10, md: 12 }} color="#fff" fontWeight="bold" mt={0.5}>
+                            {selectedAreaObj?.instantaneous_max_power !== undefined && selectedAreaObj?.instantaneous_max_power !== null && selectedAreaObj?.instantaneous_power !== undefined && selectedAreaObj?.instantaneous_power !== null
+                              ? `${selectedAreaObj.instantaneous_max_power - selectedAreaObj.instantaneous_power} W`
+                              : 'Unknown'}
+                          </Typography>
+                        </Box>
+                      </>
+                    )}
+                  </Box>
+                </Box>
+
+                {/* Shades Section - Only show if shades are present */}
+                {shades.length > 0 && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'stretch',
+                      bgcolor: '#807864',
+                      borderRadius: 0,
+                      minHeight: { xs: 110, md: 130 },
+                      flexShrink: 0,
+                      p: 0,
+                      m: 0,
+                      boxSizing: 'border-box',
+                      position: 'relative',
+                    }}
+                  >
+                    {/* Vertical label */}
+                    <Box sx={{
+                      writingMode: 'vertical-rl',
+                      fontWeight: 'bold',
+                      fontSize: { xs: 10, md: 12 },
+                      color: '#222',
+                      px: 0.5,
+                      py: 0.2,
+                      minWidth: { xs: 20, md: 24 },
+                      textAlign: 'center',
+                      bgcolor: '#fff',
+                      borderRadius: '0 12px 12px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transform: 'rotate(180deg)',
+                      mr: 1,
+                    }}>
+                      Shades
+                    </Box>
+
+                    {/* Preset buttons */}
+                    <Box sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: { xs: 0.1, md: 0.2 },
+                      mr: 0.5,
+                      justifyContent: 'center',
+                      mb: { xs: 3, md: 4 }
+                    }}>
+                      {[100, 75, 25, 0].map((percent) => (
+                        <Button
+                          key={percent}
+                          variant="contained"
+                          onClick={() => handleShadesPreset(percent)}
+                          disabled={!canUpdateAreaStatus()}
+                          sx={{
+                            background: !canUpdateAreaStatus() ? '#ddd' : '#222',
+                            color: !canUpdateAreaStatus() ? '#999' : '#fff',
+                            borderRadius: 0.8,
+                            fontSize: { xs: 8, md: 10 },
+                            fontWeight: 400,
+                            px: { xs: 0.3, md: 0.5 },
+                            py: { xs: 0.05, md: 0.1 },
+                            textTransform: 'none',
+                            boxShadow: 1,
+                            minWidth: { xs: 32, md: 40 },
+                            minHeight: { xs: 14, md: 16 },
+                            lineHeight: 1.1,
+                            padding: { xs: 0.6, md: 0.8 },
+                            opacity: !canUpdateAreaStatus() ? 0.5 : 1,
+                            cursor: !canUpdateAreaStatus() ? 'not-allowed' : 'pointer',
+                          }}
+                        >
+                          {percent}% open
+                        </Button>
+                      ))}
+                    </Box>
+
+                    {/* Sliders with paging */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        flex: 1,
+                        minHeight: 0,
+                        justifyContent: 'flex-start',
+                        position: 'relative',
+                        height: '100%',
+                      }}
+                    >
+                      {/* Left arrow */}
+                      {shadesPage > 0 && (
+                        <IconButton
+                          size="small"
+                          onClick={() => setShadesPage(shadesPage - 1)}
+                          sx={{ ...navIconSx, mr: 0.5 }}
+                        >
+                          <ArrowBackIosNewIcon sx={{ color: '#222', fontSize: { xs: 14, md: 18 } }} />
+                        </IconButton>
+                      )}
+
+                      {/* Sliders */}
+                      {pagedShades.map((shade) => (
+                        <Box
+                          key={shade.id}
+                          sx={{
+                            bgcolor: '#fff',
+                            borderRadius: 0.5,
+                            minWidth: { xs: 32, md: 40 },
+                            maxWidth: { xs: 42, md: 50 },
+                            height: { xs: 80, md: 100 },
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            boxShadow: 2,
+                            justifyContent: 'center',
+                            p: { xs: 0.1, md: 0.2 },
+                            mb: { xs: 3, md: 4 }
+                          }}
+                        >
+                          <Typography
+                            fontSize={{ xs: 8, md: 10 }}
+                            fontWeight={500}
+                            sx={{
+                              mb: 0.1,
+                              textAlign: 'center',
+                              lineHeight: 1.1,
+                              maxWidth: { xs: 32, md: 40 },
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {shade.name || 'Group'}
+                          </Typography>
+                          <div
+                            style={{
+                              height: isMobile ? 70 : 90,
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <input
+                              type="range"
+                              min={0}
+                              max={100}
+                              step={1}
+                              value={100 - (shadesLocalValues[shade.id] ?? 0)}
+                              onChange={e => handleShadeSlider(shade.id, 100 - Number(e.target.value))}
+                              disabled={shadesUpdating || !canUpdateAreaStatus()}
+                              style={{
+                                writingMode: "vertical-lr",
+                                direction: "rtl",
+                                width: isMobile ? 10 : 12,
+                                height: isMobile ? 45 : 55,
+                                margin: 0,
+                                accentColor: "#222",
+                                transform: 'scaleY(-1)'
+                              }}
+                            />
+                          </div>
+                          <Typography fontSize={{ xs: 8, md: 10 }} fontWeight={500}>
+                            {Math.round(shadesLocalValues[shade.id] ?? 0)}%
+                          </Typography>
+                        </Box>
+                      ))}
+
+                      {/* Right arrow */}
+                      {shades.length > SHADES_PER_PAGE &&
+                        (shadesPage + 1) * SHADES_PER_PAGE < shades.length && (
+                          <IconButton
+                            size="small"
+                            onClick={() => setShadesPage(shadesPage + 1)}
+                            sx={{ ...navIconSx, ml: 0.5 }}
+                          >
+                            <ArrowForwardIosIcon sx={{ color: '#222', fontSize: { xs: 14, md: 18 } }} />
+                          </IconButton>
+                        )}
+                    </Box>
+
+                    {/* Apply Button */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        right: { xs: 12, md: 16 },
+                        bottom: 1,
+                        zIndex: 2,
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        width: 'auto',
+                      }}
+                    >
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={handleApplyShades}
+                        disabled={shadesUpdating || !canUpdateAreaStatus()}
+                        sx={{
+                          ...applyButtonSx,
+                          opacity: !canUpdateAreaStatus() ? 0.5 : 1,
+                          cursor: !canUpdateAreaStatus() ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        {shadesUpdating ? 'Applying...' : 'Apply'}
+                      </Button>
+                    </Box>
+                  </Box>
+                )}
+              </>
+            )}
+          </Box>
+        </Box>
+      )}
+
+      {/* Area Settings Dialog */}
+      <AreaSettingsDialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        areaId={selectedAreaId}
+        fetchSettingsApi={fetchSettingsApi}
+        canUpdateAreaStatus={canUpdateAreaStatus()}
+        canModifyDeviceSettings={canModifyDeviceSettings()}
+        canViewAreaSettings={canViewAreaSettings()}
+        canEditScene={canEditScene()}
+        currentUserRole={currentUserRole}
+        userProfile={userProfile}
+        selectedFloorId={selectedFloorId}
+      />
+
+    </Box>
+    </>
+  );
+};
+
+function MainAreaToggle({ isOn, onClick, isMobile, disabled = false }) {
+  const getSize = () => {
+    if (window.innerWidth < 600) return { width: 36, height: 18, thumbSize: 14, fontSize: 7 }; // Further reduced
+    if (window.innerWidth < 900) return { width: 42, height: 22, thumbSize: 18, fontSize: 8 }; // Further reduced
+    return { width: 48, height: 26, thumbSize: 22, fontSize: 9 }; // Further reduced
+  };
+
+  const { width, height, thumbSize, fontSize } = getSize();
+
+  return (
+    <div
+      onClick={disabled ? undefined : onClick}
+      style={{
+        width,
+        height,
+        borderRadius: 999,
+        background: disabled ? '#ddd' : (isOn ? 'limegreen' : '#bbb'),
+        display: 'flex',
+        alignItems: 'center',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        transition: 'background 0.2s',
+        padding: 2,
+        position: 'relative',
+        minWidth: width,
+        flexShrink: 0,
+        overflow: 'hidden', // Ensure toggle doesn't overflow
+        opacity: disabled ? 0.5 : 1,
+      }}
+    >
+      <div
+        style={{
+          width: thumbSize,
+          height: thumbSize,
+          borderRadius: '50%',
+          background: '#fff',
+          transform: isOn ? `translateX(${width - thumbSize - 4}px)` : 'translateX(0)',
+          transition: 'transform 0.2s',
+          boxShadow: '0 1px 4px #0001',
+          position: 'absolute',
+          left: 2,
+          top: 2,
+        }}
+      />
+      <span
+        style={{
+          position: 'absolute',
+          left: isOn ? 4 : width - 18, // Adjusted positioning
+          color: '#222',
+          fontWeight: 700,
+          fontSize,
+          transition: 'left 0.2s',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          maxWidth: width - 10, // Adjusted max width
+          lineHeight: 1, // Tighter line height
+        }}
+      >
+        {isOn ? 'ON' : 'OFF'}
+      </span>
+    </div>
+  );
+}
+
+function ZoneControlCard({ zone, values, onChange, disabled, isMobile, isTablet, isDesktop, isLargeScreen, is1440Screen, isUltraWide, is2560Screen }) {
+  const isSwitchType = isSwitched(zone.type);
+  const isWhitetuneType = isWhitening(zone.type);
+  const isDimmedType = isDimmed(zone.type);
+
+  const safeValues = values || { on_off: zone.status || zone.on_off || 'Off' };
+
+  if (isSwitchType) {
+    const isOn = safeValues.on_off === 'On';
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1, mb: 1 }}>
+        <Typography fontWeight="bold" fontSize={{ xs: 11, md: 13 }} sx={{ minWidth: 20, mr: 1 }}>
+          {zone.name}
+        </Typography>
+        <Box
+          onClick={() => !disabled && onChange({ on_off: isOn ? 'Off' : 'On' })}
+          sx={{
+            width: { xs: 36, md: 44 },
+            height: { xs: 18, md: 22 },
+            borderRadius: 999,
+            background: disabled ? '#ddd' : (isOn ? 'limegreen' : '#bbb'),
+            display: 'flex',
+            alignItems: 'center',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            transition: 'background 0.2s',
+            padding: 1,
+            position: 'relative',
+            minWidth: { xs: 36, md: 44 },
+            ml: 1,
+            opacity: disabled ? 0.5 : 1,
+          }}
+        >
+          <Box
+            sx={{
+              width: { xs: 14, md: 18 },
+              height: { xs: 14, md: 18 },
+              borderRadius: '50%',
+              background: '#fff',
+              transform: isOn ? `translateX(${isMobile ? 16 : 20}px)` : 'translateX(0)',
+              transition: 'transform 0.2s',
+              boxShadow: '0 1px 4px #0001',
+              position: 'absolute',
+              left: 2,
+              top: 2,
+            }}
+          />
+          <Typography
+            sx={{
+              position: 'absolute',
+              left: isOn ? (isMobile ? 4 : 6) : (isMobile ? 14 : 18),
+              color: disabled ? '#999' : '#222',
+              fontWeight: 700,
+              fontSize: { xs: 10, md: 12 },
+              transition: 'left 0.2s',
+            }}
+          >
+            {isOn ? 'ON' : 'OFF'}
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (isWhitetuneType) {
+    const brightnessMin = zone.brightness_min !== undefined ? zone.brightness_min : 0;
+    const brightnessMax = zone.brightness_max !== undefined ? zone.brightness_max : 100;
+    const cctMin = zone.cct_min !== undefined ? zone.cct_min : 2700;
+    const cctMax = zone.cct_max !== undefined ? zone.cct_max : 7000;
+
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+        <Box sx={{
+          flex: 1,
+          bgcolor: '#fff',
+          borderRadius: 0.5,
+          p: { xs: 0.5, md: 1 },
+          minWidth: { xs: 110, sm: 120, md: 130 },
+          maxWidth: { xs: 140, sm: 150, md: 160 },
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          <Typography
+            fontWeight="bold"
+            fontSize={{ xs: 9, sm: 10, md: 11 }}
+            sx={{
+              mb: 0.8, // Increased margin bottom to prevent overlap
+              height: 18, // Fixed height for zone name
+              lineHeight: 1.2,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {zone.name}
+          </Typography>
+
+          {/* Brightness Slider - Fixed positioning */}
+          <Box sx={{ position: 'relative', width: '85%', mt: 0.5, pl: { xs: 1, md: 2 } }}>
+            <Slider
+              min={brightnessMin}
+              max={brightnessMax}
+              value={safeValues.brightness}
+              onChange={(_, v) => onChange({ brightness: v })}
+              disabled={disabled}
+              sx={{
+                color: '#222',
+                height: { xs: 2, md: 3 },
+                '& .MuiSlider-thumb': {
+                  width: { xs: 8, md: 10 },
+                  height: { xs: 8, md: 10 },
+                  bgcolor: '#222',
+                  boxShadow: 'none',
+                },
+                '& .MuiSlider-rail': {
+                  height: { xs: 2, md: 3 },
+                  borderRadius: 1.5,
+                },
+                '& .MuiSlider-track': {
+                  height: { xs: 2, md: 3 },
+                  borderRadius: 1.5,
+                },
+              }}
+            />
+            <Typography
+              fontSize={{ xs: 8, sm: 9, md: 10 }}
+              fontWeight={700}
+              sx={{
+                position: 'absolute',
+                top: { xs: -18, sm: -20, md: -22 }, // Moved further up
+                right: -8, // Moved further right
+                color: '#807864',
+                background: '#fff',
+                px: 0.4,
+                py: 0.1,
+                borderRadius: 0.5,
+                border: '1px solid #ddd',
+                minWidth: 28,
+                textAlign: 'center',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+              }}
+            >
+              {safeValues.brightness}%
+            </Typography>
+          </Box>
+
+          {/* CCT Slider - Fixed positioning */}
+          <Box sx={{ position: 'relative', width: '85%', mt: 0.8, pl: { xs: 1, md: 2 } }}>
+            <Slider
+              min={cctMin}
+              max={cctMax}
+              value={safeValues.cct}
+              onChange={(_, v) => onChange({ cct: v })}
+              disabled={disabled}
+              sx={{
+                color: '#FFD600',
+                height: { xs: 2, md: 3 },
+                '& .MuiSlider-thumb': {
+                  width: { xs: 8, md: 10 },
+                  height: { xs: 8, md: 10 },
+                  bgcolor: '#FFD600',
+                  boxShadow: 'none',
+                },
+                '& .MuiSlider-rail': {
+                  height: { xs: 2, md: 3 },
+                  borderRadius: 1.5,
+                },
+                '& .MuiSlider-track': {
+                  height: { xs: 2, md: 3 },
+                  borderRadius: 1.5,
+                },
+              }}
+            />
+            <Typography
+              fontSize={{ xs: 8, sm: 9, md: 10 }}
+              fontWeight={500}
+              sx={{
+                position: 'absolute',
+                top: { xs: -18, sm: -20, md: -22 }, // Moved further up
+                right: -8, // Moved further right
+                color: '#333',
+                background: '#fff',
+                px: 0.4,
+                py: 0.1,
+                borderRadius: 0.5,
+                border: '1px solid #ddd',
+                minWidth: 32,
+                textAlign: 'center',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+              }}
+            >
+              {safeValues.cct}K
+            </Typography>
+          </Box>
+
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontSize: { xs: 7, md: 9 },
+            color: '#807864',
+            mt: 0.8 // Increased margin top
+          }}>
+            <span>{cctMin}K</span>
+            <span>{cctMax}K</span>
+          </Box>
+        </Box>
+
+        {/* Fade/Delay Time inputs */}
+        <Box sx={{ display: 'flex', flexDirection: 'row', gap: { xs: 0.5, md: 1 }, alignItems: 'flex-start', justifyContent: 'center', ml: 1 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Typography fontSize={{ xs: 9, md: 11 }} fontWeight={700} sx={{ mb: 0.2, textAlign: 'center' }}>Fade</Typography>
+            <Typography fontSize={{ xs: 9, md: 11 }} fontWeight={700} sx={{ mb: 0.2, textAlign: 'center' }}>Time</Typography>
+            <input
+              type="text"
+              value={safeValues.fadeTime || '02'}
+              onChange={e => onChange({ fadeTime: e.target.value.replace(/\D/g, '').slice(0, 2) })}
+              style={{
+                width: isMobile ? 26 : 30,
+                height: isMobile ? 16 : 20,
+                fontSize: isMobile ? 10 : 12,
+                textAlign: 'center',
+                borderRadius: 2,
+                border: '1px solid #ccc',
+                background: '#fff',
+                fontWeight: 600,
+                color: '#222'
+              }}
+              disabled={disabled}
+            />
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Typography fontSize={{ xs: 9, md: 11 }} fontWeight={700} sx={{ mb: 0.2, textAlign: 'center' }}>Delay</Typography>
+            <Typography fontSize={{ xs: 9, md: 11 }} fontWeight={700} sx={{ mb: 0.2, textAlign: 'center' }}>Time</Typography>
+            <input
+              type="text"
+              value={safeValues.delayTime || '00'}
+              onChange={e => onChange({ delayTime: e.target.value.replace(/\D/g, '').slice(0, 2) })}
+              style={{
+                width: isMobile ? 26 : 30,
+                height: isMobile ? 16 : 20,
+                fontSize: isMobile ? 10 : 12,
+                textAlign: 'center',
+                borderRadius: 2,
+                border: '1px solid #ccc',
+                background: '#fff',
+                fontWeight: 600,
+                color: '#222'
+              }}
+              disabled={disabled}
+            />
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (isDimmedType) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+        <Box sx={{
+          flex: 1,
+          bgcolor: '#fff',
+          borderRadius: 0.5,
+          p: { xs: 0.5, md: 1 },
+          minWidth: { xs: 110, sm: 120, md: 130 },
+          maxWidth: { xs: 140, sm: 150, md: 160 },
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-start'
+        }}>
+          <Typography
+            fontWeight="bold"
+            fontSize={{ xs: 9, sm: 10, md: 12 }}
+            sx={{
+              mb: 0.8, // Increased margin bottom
+              height: 18, // Fixed height
+              lineHeight: 1.2,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {zone.name}
+          </Typography>
+          <Box sx={{ position: 'relative', width: '85%', mt: 0.5, ml: { xs: 1, md: 2 } }}>
+            <Slider
+              min={0}
+              max={100}
+              value={safeValues.brightness}
+              onChange={(_, v) => onChange({ brightness: v })}
+              disabled={disabled}
+              sx={{
+                color: '#222',
+                height: { xs: 2, md: 3 },
+                '& .MuiSlider-thumb': {
+                  width: { xs: 8, md: 10 },
+                  height: { xs: 8, md: 10 },
+                  bgcolor: '#222',
+                  boxShadow: 'none',
+                },
+                '& .MuiSlider-rail': {
+                  height: { xs: 2, md: 3 },
+                  borderRadius: 1.5,
+                },
+                '& .MuiSlider-track': {
+                  height: { xs: 2, md: 3 },
+                  borderRadius: 1.5,
+                },
+              }}
+            />
+            <Typography
+              fontSize={{ xs: 8, sm: 9, md: 11 }}
+              fontWeight={700}
+              sx={{
+                position: 'absolute',
+                top: { xs: -18, sm: -20, md: -22 }, // Moved further up
+                right: -8,
+                color: '#807864',
+                background: '#fff',
+                px: 0.4,
+                py: 0.1,
+                borderRadius: 0.5,
+                border: '1px solid #ddd',
+                minWidth: 28,
+                textAlign: 'center',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+              }}
+            >
+              {safeValues.brightness}%
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Fade/Delay Time inputs for dimmed */}
+        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, alignItems: 'flex-start', justifyContent: 'center', ml: 1 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Typography fontSize={{ xs: 9, md: 11 }} sx={{ mb: 0.2, textAlign: 'center' }}>Fade</Typography>
+            <Typography fontSize={{ xs: 9, md: 11 }} sx={{ mb: 0.2, textAlign: 'center' }}>Time</Typography>
+            <input
+              type="text"
+              value={safeValues.fadeTime || '02'}
+              onChange={e => onChange({ fadeTime: e.target.value.replace(/\D/g, '').slice(0, 2) })}
+              style={{
+                width: 30,
+                height: 20,
+                fontSize: 12,
+                textAlign: 'center',
+                borderRadius: 2,
+                border: '1px solid #ccc',
+                background: '#fff',
+                fontWeight: 600,
+                color: '#222'
+              }}
+              disabled={disabled}
+            />
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Typography fontSize={{ xs: 9, md: 11 }} sx={{ mb: 0.2, textAlign: 'center' }}>Delay</Typography>
+            <Typography fontSize={{ xs: 9, md: 11 }} sx={{ mb: 0.2, textAlign: 'center' }}>Time</Typography>
+            <input
+              type="text"
+              value={safeValues.delayTime || '00'}
+              onChange={e => onChange({ delayTime: e.target.value.replace(/\D/g, '').slice(0, 2) })}
+              style={{
+                width: 30,
+                height: 20,
+                fontSize: 12,
+                textAlign: 'center',
+                borderRadius: 2,
+                border: '1px solid #ccc',
+                background: '#fff',
+                fontWeight: 600,
+                color: '#222'
+              }}
+              disabled={disabled}
+            />
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+}
+
+function getPolygonBoundingBox(coords) {
+  if (!coords.length) return { minX: 0, minY: 0, maxX: 0, maxY: 0, width: 0, height: 0 };
+  const xs = coords.map(pt => pt.x);
+  const ys = coords.map(pt => pt.y);
+  const minX = Math.min(...xs);
+  const minY = Math.min(...ys);
+  const maxX = Math.max(...xs);
+  const maxY = Math.max(...ys);
+  return {
+    minX, minY, maxX, maxY,
+    width: maxX - minX,
+    height: maxY - minY,
+  };
+}
+
+// Helper function to find the largest value in an array
+function arrayLargest(arr) {
+  if (!arr || arr.length === 0) return 0;
+  return Math.max(...arr);
+}
+
+function truncateText(text, maxChars) {
+  if (text.length <= maxChars) return text;
+  return text.slice(0, Math.max(0, maxChars - 1)) + '…';
+}
+
+function HeatmapPdfSvgViewer({
+  pdfUrl,
+  pageDims,
+  setPageDims,
+  scale,
+  setScale,
+  hasFit,
+  handleFit,
+  areas,
+  getFill,
+  handleAreaClick,
+  searchTerm,
+  pan,
+  setPan,
+  searchBounceAnimation,
+  isDragging,
+  setIsDragging,
+  dragStart,
+  setDragStart,
+  contentBBox,
+  containerFitMode,
+  highlightedAreaId
+}) {
+  // Use A4 dimensions as fallback for consistent rendering
+  const A4_WIDTH = 794;
+  const A4_HEIGHT = 1123;
+  
+  // Pan/drag functionality
+  const handleMouseDown = (e) => {
+    if (e.button === 0) { // Left mouse button
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+      e.preventDefault();
+    }
+  };
+
+
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      const newPan = {
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      };
+      setPan(newPan);
+      e.preventDefault();
+    }
+  };
+
+  const handleMouseUp = (e) => {
+    if (isDragging) {
+      setIsDragging(false);
+      e.preventDefault();
+    }
+  };
+
+  const handleMouseLeave = (e) => {
+    if (isDragging) {
+      setIsDragging(false);
+    }
+  };
+
+  // Scroll-based zoom functionality with mouse-centered zoom
+  const handleWheel = (e) => {
+    // Define zoom limits
+    const MIN_SCALE = 0.1;
+    const MAX_SCALE = 5.0;
+    
+    // Determine zoom direction and factor
+    const delta = e.deltaY > 0 ? -1 : 1;
+    const zoomFactor = 0.15;
+    const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale + delta * zoomFactor));
+    
+    // Get container dimensions and mouse position
+    const rect = e.currentTarget.getBoundingClientRect();
+    const containerCenterX = rect.width / 2;
+    const containerCenterY = rect.height / 2;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    // Calculate mouse position relative to container center
+    const mouseRelativeToCenterX = mouseX - containerCenterX;
+    const mouseRelativeToCenterY = mouseY - containerCenterY;
+    
+    // Calculate the point in the PDF coordinate system that the mouse is pointing at
+    // The PDF transform is: translate(-50%, -50%) translate(pan.x, pan.y) scale(scale)
+    // So to get the PDF point: (mouse - pan) / scale
+    const pdfPointX = (mouseRelativeToCenterX - pan.x) / scale;
+    const pdfPointY = (mouseRelativeToCenterY - pan.y) / scale;
+    
+    // Calculate new pan values to keep the PDF point under the mouse cursor
+    // New transform: translate(-50%, -50%) translate(newPan.x, newPan.y) scale(newScale)
+    // So: mouse = newPan + (pdfPoint * newScale)
+    const newPanX = mouseRelativeToCenterX - pdfPointX * newScale;
+    const newPanY = mouseRelativeToCenterY - pdfPointY * newScale;
+    
+    // Apply the new scale and pan
+    setScale(newScale);
+    setPan({ x: newPanX, y: newPanY });
+  };
+  
+  return (
+    <Box
+      sx={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        flex: '1 1 auto',
+        minHeight: 0,
+        minWidth: 0,
+        overflow: 'hidden',
+        bgcolor: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexGrow: 1,
+        flexShrink: 1,
+        cursor: isDragging ? 'grabbing' : 'grab',
+        userSelect: 'none',
+      }}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+      onWheel={(e) => {
+        e.preventDefault();
+        handleWheel(e);
+      }}
+    >
+      {/* Centered PDF container with improved positioning */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: `translate(-50%, -50%) translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
+          width: 'auto',
+          height: 'auto',
+          maxWidth: 'none', // Remove maxWidth constraint
+          maxHeight: 'none', // Remove maxHeight constraint
+          display: 'block',
+          pointerEvents: isDragging ? 'none' : 'auto', // Disable pointer events while dragging
+        }}
+      >
+        {/* Render full PDF without cropping */}
+        <Box>
+          {pdfUrl ? (
+            <Document file={pdfUrl} key={pdfUrl}>
+              <Page
+                pageNumber={1}
+                width={pageDims ? pageDims.width : A4_WIDTH}
+                renderAnnotationLayer={false}
+                renderTextLayer={false}
+                onLoadSuccess={(page) => {
+                  // Capture original PDF dimensions for coordinate scaling
+                  const dimensions = { width: page.originalWidth, height: page.originalHeight };
+                  setPageDims(dimensions);
+                  
+                  // Don't call handleFit here - let the useEffect handle it when pageDims changes
+                  // This ensures we have the correct dimensions before fitting
+                }}
+              />
+            </Document>
+          ) : (
+            <CircularProgress />
+          )}
+          <svg
+            width={pageDims ? pageDims.width : A4_WIDTH}
+            height={pageDims ? pageDims.height : A4_HEIGHT}
+            style={{ position: 'absolute', top: 0, left: 0, zIndex: 2, pointerEvents: 'auto' }}
+          >
+            {(areas || []).map((area, index) => {
+              const coords = (area.coordinates || [])
+                .filter(pt => pt && typeof pt.x === 'number' && typeof pt.y === 'number');
+              
+              // Use coordinates directly - they should already be in the correct PDF coordinate system
+              // No scaling needed since we're rendering the PDF at its natural size
+              let scaledCoords = coords;
+              
+              // Use coordinates directly - they should already be in the correct PDF coordinate system
+              
+              const points = scaledCoords.map((p) => `${p.x},${p.y}`).join(' ');
+              const center = scaledCoords.length > 0
+                ? { x: scaledCoords.reduce((sum, p) => sum + p.x, 0) / scaledCoords.length, y: scaledCoords.reduce((sum, p) => sum + p.y, 0) / scaledCoords.length }
+                : { x: 0, y: 0 };
+              const bbox = getPolygonBoundingBox(scaledCoords);
+
+              // Enhanced search highlight - consistent with main search logic
+              const q = (searchTerm || "").trim().toLowerCase();
+              const searchAreaName = (area.name || area.area_name || "").toLowerCase();
+              const areaCode = (area.code || "").toLowerCase();
+              const areaId = (area.area_id || area.id || "").toString().toLowerCase();
+              
+              // Enhanced search matching - same logic as main search
+              let isHighlightedSearch = false;
+              if (q) {
+                const isNumeric = /^\d+$/.test(q);
+                
+                if (isNumeric) {
+                  // For numeric searches, extract all complete numbers from the text
+                  const nameNumbers = searchAreaName.match(/\d+/g) || [];
+                  const codeNumbers = areaCode.match(/\d+/g) || [];
+                  const idNumbers = areaId.match(/\d+/g) || [];
+                  
+                  // Check if the search number exactly matches any complete number in the area NAME only
+                  // Examples:
+                  // Search "5" → matches areas with ["5", "15", "25", "54", "154"] (any number containing "5")
+                  // Search "54" → matches areas with ["54"] only (not "5" or "4" separately)
+                  // Search "543" → matches areas with ["543"] only (not "54" or "5" separately)
+                  // NOTE: Only search in area name, NOT in area ID
+                  isHighlightedSearch = nameNumbers.includes(q) || 
+                                       codeNumbers.includes(q);
+                } else {
+                  // For non-numeric searches, use word-based matching
+                  const nameWords = searchAreaName.split(/\s+/);
+                  const codeWords = areaCode.split(/\s+/);
+                  
+                  isHighlightedSearch = nameWords.some(word => word === q) ||
+                                       codeWords.some(word => word === q) ||
+                                       searchAreaName.includes(q) || 
+                                       areaCode.includes(q) ||
+                                       areaId === q;
+                }
+              }
+              const isHighlightedById = highlightedAreaId && ((area.area_id || area.id) === highlightedAreaId);
+              const isHighlighted = !!isHighlightedById || !!isHighlightedSearch;
+
+              // Calculate available space - use more space for larger areas
+              const areaSize = Math.min(bbox.width, bbox.height);
+              // Use more space for larger areas to show full text
+              const spaceFactor = areaSize > 50 ? 0.9 : 0.8;
+              const availableWidth = bbox.width * spaceFactor;
+              const availableHeight = bbox.height * spaceFactor;
+              
+              // Fixed font size - don't use area size, just use consistent sizing
+              const ZOOM_THRESHOLD = 1.0;
+              const isZoomedIn = scale > ZOOM_THRESHOLD;
+              
+              // Fixed font sizes - reduced by 1 point for better visibility
+              const fontSize = !isZoomedIn ? 15 : 13; // 15px for abbreviated, 13px for full text
+              
+              const padding = fontSize * 0.15;
+              const lineHeight = fontSize * 1.2;
+
+              // Simple text display: 3-4 letters by default, full names when zoomed
+              const wrapText = (text, maxWidth) => {
+                if (!text) return [];
+
+                // Use the same zoom threshold as defined above
+                const isZoomedIn = scale > ZOOM_THRESHOLD;
+                
+                if (!isZoomedIn) {
+                  // Default view: show 3-4 characters for ALL areas
+                  const abbreviatedText = text.substring(0, 4);
+                  return [abbreviatedText];
+                } else {
+                  // Zoomed in: show FULL text - ALWAYS use 2 lines to prevent cutting
+                  const words = text.split(' ');
+                  
+                  // If only one word or very short text, return as is
+                  if (words.length <= 1 || text.length <= 8) {
+                    return [text];
+                  }
+                  
+                  // For longer text, always split into 2 lines
+                  const lines = [];
+                  
+                  if (words.length === 2) {
+                    // Two words - one per line
+                    lines.push(words[0]);
+                    lines.push(words[1]);
+                  } else if (words.length === 3) {
+                    // Three words - first word on line 1, rest on line 2
+                    lines.push(words[0]);
+                    lines.push(words.slice(1).join(' '));
+                  } else if (words.length === 4) {
+                    // Four words - first two on line 1, last two on line 2
+                    lines.push(words.slice(0, 2).join(' '));
+                    lines.push(words.slice(2).join(' '));
+                  } else {
+                    // More than 4 words - split roughly in half
+                    const midPoint = Math.ceil(words.length / 2);
+                    lines.push(words.slice(0, midPoint).join(' '));
+                    lines.push(words.slice(midPoint).join(' '));
+                  }
+                  
+                  return lines;
+                }
+              };
+
+              // Wrap text to fit within area (up to 3 lines for small areas, 2 lines for larger areas)
+              const displayAreaName = area.name || area.area_name || '';
+              const finalLines = wrapText(displayAreaName, availableWidth - (padding * 2));
+
+              // Calculate background dimensions - very generous when zoomed in for 2-line text
+              const maxLineWidth = Math.max(...finalLines.map(line => line.length * fontSize * 0.4)); // More generous character width for 2-line display
+              
+              // Set background dimensions based on zoom level and area size
+              const isSmallArea = areaSize < 40;
+              const backgroundWidth = isZoomedIn 
+                ? Math.min(maxLineWidth + (padding * 8), availableWidth * 0.95) // Very generous width for 2-line text
+                : Math.min(maxLineWidth + (padding * 2), availableWidth * 0.9);  // Compact when default
+              const backgroundHeight = isZoomedIn 
+                ? Math.min(finalLines.length * lineHeight + (padding * 6), availableHeight * 0.95) // Very generous height for 2-line text
+                : Math.min(finalLines.length * lineHeight + (padding * 1.5), availableHeight * 0.9); // Compact when default
+
+              return (
+                <g key={index}>
+                  {/* Define clipping path for this area */}
+                  <defs>
+                    <clipPath id={`clip-${index}`}>
+                      <polygon points={points} />
+                    </clipPath>
+                  </defs>
+                  
+                  {/* Base polygon - scales with zoom */}
+                  <polygon
+                    points={points}
+                    fill={getFill(area)}
+                    stroke={'#000'}
+                    strokeWidth={2}
+                    vectorEffect="non-scaling-stroke"
+                    onClick={() => handleAreaClick(area)}
+                    style={{ 
+                      cursor: 'pointer', 
+                      pointerEvents: 'auto'
+                    }}
+                  />
+                  {center.x && center.y && displayAreaName && finalLines.length > 0 && (
+                    <>
+                      {/* Multi-line text - consistent size, positioned within the area with strict clipping */}
+                      <g 
+                        clipPath={`url(#clip-${index})`}
+                      >
+                      {/* White background rectangle for text */}
+                      <rect
+                        x={center.x - (backgroundWidth / 2)}
+                        y={center.y - (backgroundHeight / 2)}
+                        width={backgroundWidth}
+                        height={backgroundHeight}
+                        fill="white"
+                        fillOpacity="0.9"
+                        stroke="none"
+                        rx="2"
+                        ry="2"
+                      />
+                      {finalLines.map((line, lineIndex) => {
+                        // Simple centered text positioning
+                        const textX = center.x;
+                        const textY = center.y - (finalLines.length * lineHeight / 2) + (lineIndex * lineHeight) + (lineHeight / 2);
+                        
+                        return (
+                        <text
+                          key={lineIndex}
+                          x={textX}
+                          y={textY}
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                          fontSize={fontSize}
+                          fill={isHighlighted ? '#b71c1c' : '#000'}
+                          stroke="none"
+                          fontWeight="600"
+                          style={{ 
+                            pointerEvents: 'none', 
+                            userSelect: 'none', 
+                            fontFamily: 'Arial, sans-serif',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}
+                        >
+                          {line}
+                        </text>
+                        );
+                      })}
+                      </g>
+                    </>
+                  )}
+                  {/* Enhanced highlight overlay with red color, thicker border, and continuous bounce animation */}
+                  {isHighlighted && (
+                    <g
+                      style={{ 
+                        pointerEvents: 'none',
+                        animation: searchBounceAnimation ? 'searchBounce 1.5s ease-in-out infinite' : 'none'
+                      }}
+                    >
+                      <polygon
+                        points={points}
+                        fill={'none'}
+                        stroke={'#ff0000'}
+                        strokeWidth={8}
+                        vectorEffect="non-scaling-stroke"
+                        strokeDasharray="10,5"
+                        opacity={1.0}
+                      />
+                      {/* Additional inner highlight for better visibility */}
+                      <polygon
+                        points={points}
+                        fill={'rgba(255, 0, 0, 0.15)'}
+                        stroke={'#ff0000'}
+                        strokeWidth={4}
+                        vectorEffect="non-scaling-stroke"
+                        opacity={0.8}
+                      />
+                    </g>
+                  )}
+                </g>
+              );
+            })}
+          </svg>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+
+export default HeatMap;
+
+
+
+
+
+
+===========================================
+
+
+import React, { useEffect, useState } from "react";
+import {
+  Box, Button, FormControl, IconButton, InputBase,
+  MenuItem, Paper, Select, useMediaQuery, useTheme
+} from "@mui/material";
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear'; // Add this import
+import { styled } from '@mui/material/styles';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchFloors } from "../../redux/slice/floor/floorSlice";
+import {
+  setSelectedFloorId,
+  setDisplayMode,
+  fetchFloorMapData,
+  fetchAreaOccupancyStatus,
+  fetchAreaEnergyConsumption,
+  setHeatmapSearchTerm,
+  refreshAllHeatmapData, // Add this import
+} from '../../redux/slice/settingsslice/heatmap/HeatmapSlice'
+import { useNavigate } from "react-router-dom";
+import GroupOccupancyModel from '../heatmap/GroupOccupancymodel'
+
+import { UseAuth } from '../../customhooks/UseAuth'; // Add this import
+
+import { selectApplicationTheme } from "../../redux/slice/theme/themeSlice";
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  '& .MuiInputBase-input': {
+    padding: theme.spacing(1, 1, 1, 0),
+    // Start text right after the search icon
+    paddingLeft: theme.spacing(0.5),
+    paddingRight: `calc(1em + ${theme.spacing(4)})`, // Add right padding for clear icon
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+      width: '15ch',
+    },
+    [theme.breakpoints.up('md')]: {
+      width: '20ch',
+    },
+    [theme.breakpoints.up('lg')]: {
+      width: '25ch',
+    },
+  },
+}));
+
+const HeatmapControls = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const theme = useTheme();
+  const [showOccupancyModal, setShowOccupancyModal] = useState(false);
+
+  // Get current user role and permissions
+  const { role: currentUserRole } = UseAuth();
+  
+  // Get user profile from Redux state
+  const userProfile = useSelector(state => state.user.profile);
+
+  // Responsive breakpoints
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  const isLaptop = useMediaQuery(theme.breakpoints.between('md', 'lg'));
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
+  const { floors, status: floorStatus } = useSelector(state => state.floor);
+
+  // const { selectedFloorId, displayMode = 'Light' } = useSelector(state => state.heatmap || {});
+  const appTheme = useSelector(selectApplicationTheme);
+  const contentColor = appTheme?.application_theme?.content || 'rgba(128, 120, 100, 0.7)';
+  const buttonColor = appTheme?.application_theme?.button || '#232323'
+
+  const { selectedFloorId, displayMode = 'Light', searchTerm = "" } = useSelector(state => state.heatmap || {});
+  const [searchInput, setSearchInput] = useState(searchTerm); // local input
+  // Shared sizing tokens to keep everything aligned in one row
+  const CONTROL_HEIGHT = { xs: 28, sm: 30, md: 34, lg: 36 };
+  const CONTROL_FONT = { xs: '0.65rem', sm: '0.75rem', md: '0.85rem', lg: '0.9rem' };
+
+
+  // Function to check if user can modify device lock and occupancy settings
+  const canModifyDeviceSettings = () => {
+    // Superadmin and Admin can always modify device settings
+    if (currentUserRole === 'Superadmin' || currentUserRole === 'Admin') {
+      return true;
+    }
+    
+    // For Operators, check if they have the required permissions for the current floor
+    if (currentUserRole === 'Operator' && selectedFloorId && userProfile && userProfile.floors) {
+      const currentFloorPermission = userProfile.floors.find(f => f.floor_id === selectedFloorId);
+      
+      if (currentFloorPermission) {
+        const permission = currentFloorPermission.floor_permission;
+        // Allow modifications for "monitor_control" (Monitoring and Control) AND "monitor_control_edit" (Monitoring, Control and Edit)
+        // NOT for "monitoring" (Monitoring only)
+        return permission === 'monitor_control' || permission === 'monitor_control_edit';
+      }
+    }
+    
+    // Default: Operators cannot modify device settings
+    return false;
+  };
+
+  // Function to check if user can create area groups
+  const canCreateAreaGroup = () => {
+    // Superadmin and Admin can always create area groups
+    if (currentUserRole === 'Superadmin' || currentUserRole === 'Admin') {
+      return true;
+    }
+    
+    // For Operators, we need to check their floor permissions
+    if (currentUserRole === 'Operator' && selectedFloorId) {
+      if (userProfile && userProfile.floors && Array.isArray(userProfile.floors)) {
+        // Find the current floor permission
+        const currentFloorPermission = userProfile.floors.find(f => f.floor_id === selectedFloorId);
+        
+        if (currentFloorPermission) {
+          // Check if permission is "monitor_control_edit" (Monitoring, edit and control)
+          return currentFloorPermission.floor_permission === 'monitor_control_edit';
+        }
+      }
+      
+      // Fallback: If we can't determine floor permissions, 
+      // assume the operator cannot create area groups for security
+      return false;
+    }
+    
+    // Default: Operators cannot create area groups
+    return false;
+  };
+
+  // Function to get available floors based on user permissions
+  const getAvailableFloors = () => {
+    // Superadmin and Admin can see all floors
+    if (currentUserRole === 'Superadmin' || currentUserRole === 'Admin') {
+      return floors;
+    }
+    
+    // For Operators, only show floors they have access to
+    if (currentUserRole === 'Operator' && userProfile && userProfile.floors) {
+      const operatorFloorIds = userProfile.floors.map(f => f.floor_id);
+      return floors.filter(floor => operatorFloorIds.includes(floor.id));
+    }
+    
+    // Default: return all floors
+    return floors;
+  };
+
+  // Function to check if user can access a specific floor
+  const canAccessFloor = (floorId) => {
+    // Superadmin and Admin can access all floors
+    if (currentUserRole === 'Superadmin' || currentUserRole === 'Admin') {
+      return true;
+    }
+    
+    // For Operators, check if they have access to this floor
+    if (currentUserRole === 'Operator' && userProfile && userProfile.floors) {
+      return userProfile.floors.some(f => f.floor_id === floorId);
+    }
+    
+    // Default: can access
+    return true;
+  };
+
+
+  useEffect(() => {
+    if (!floors || floors.length === 0) {
+      dispatch(fetchFloors());
+    }
+  }, [dispatch, floors]);
+
+  useEffect(() => {
+    if (!displayMode) dispatch(setDisplayMode('Light'));
+  }, [dispatch, displayMode]);
+
+  useEffect(() => { setSearchInput(searchTerm); }, [searchTerm]); // keep input in sync
+
+  const handleFloorChange = (event) => {
+    const floorId = event.target.value;
+    
+    // Check if user can access this floor
+    if (!canAccessFloor(floorId)) {
+      return;
+    }
+    
+    dispatch(setSelectedFloorId(floorId));
+  };
+
+  const handleDisplayModeChange = (mode) => {
+    dispatch(setDisplayMode(mode));
+  };
+
+  const handleClearSearch = async () => {
+    // Clear the search term
+    dispatch(setHeatmapSearchTerm(''));
+    
+    // Reload the heatmap data for the current floor and mode
+    if (selectedFloorId) {
+      try {
+        // Fetch fresh data based on current display mode
+        switch (displayMode) {
+          case 'Light':
+            await dispatch(fetchFloorMapData({ floorId: selectedFloorId }));
+            break;
+          case 'Occupancy':
+            await dispatch(fetchAreaOccupancyStatus({ floorId: selectedFloorId }));
+            break;
+          case 'Energy':
+            await dispatch(fetchAreaEnergyConsumption({ floorId: selectedFloorId }));
+            break;
+          default:
+            await dispatch(fetchFloorMapData({ floorId: selectedFloorId }));
+        }
+      } catch (error) {
+        // Failed to refresh heatmap data
+      }
+    }
+  };
+
+  const fetchDataForMode = (floorId, mode) => {
+    switch (mode) {
+      case 'Light':
+        dispatch(fetchFloorMapData({ floorId }));
+        break;
+      case 'Occupancy':
+        dispatch(fetchAreaOccupancyStatus({ floorId }));
+        break;
+      case 'Energy':
+        dispatch(fetchAreaEnergyConsumption({ floorId }));
+        break;
+      default:
+        dispatch(fetchFloorMapData({ floorId }));
+    }
+  };
+
+  return (
+    <>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        mb: 0,
+        mt: 0,
+        pt: 0,
+        pb: '2px',
+        px: { xs: 0.5, sm: 1, md: 0.5 },
+        gap: { xs: 0.3, sm: 0.5, md: 0.8 },
+        flexWrap: 'nowrap',
+        overflow: 'hidden',
+        minHeight: { xs: 36, sm: 38, md: 40 },
+      }}>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: { xs: 0.3, sm: 0.5, md: 0.8, lg: 1 },
+          flex: '1 1 auto',
+          minWidth: 0,
+          overflow: 'hidden',
+        }}>
+          {/* Floor Selection */}
+          <FormControl
+            variant="outlined"
+            size="small"
+            sx={{
+              minWidth: { xs: 110, sm: 125, md: 145, lg: 165 },
+              maxWidth: { xs: 120, sm: 140, md: 160, lg: 180 },
+              flexShrink: 0,
+            }}
+          >
+            <Select
+              value={selectedFloorId || ""}
+              onChange={handleFloorChange}
+              displayEmpty
+              disabled={floorStatus === 'loading'}
+              sx={{
+                backgroundColor: '#fff',
+                color: '#000',
+                fontSize: CONTROL_FONT,
+                height: CONTROL_HEIGHT
+              }}
+            >
+              <MenuItem value="">Select Floor</MenuItem>
+              {getAvailableFloors().map(f => (
+                <MenuItem key={f.id} value={f.id}>{f.floor_name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Search */}
+          <Paper
+            component="form"
+            onSubmit={(e) => e.preventDefault()}
+            sx={{
+              p: { xs: '1px 2px', sm: '2px 3px' },
+              display: 'flex',
+              alignItems: 'center',
+              width: { xs: 110, sm: 130, md: 200, lg: 250 },
+              backgroundColor: 'white',
+              height: CONTROL_HEIGHT,
+              flexShrink: 0,
+              position: 'relative', // Add position relative for absolute positioning of clear icon
+            }}
+          >
+            <IconButton size="small" sx={{ p: { xs: '2px', sm: '4px', md: '6px' } }}>
+              <SearchIcon fontSize={isMobile ? 'small' : 'medium'} />
+            </IconButton>
+            <StyledInputBase
+              placeholder="Search Area"
+              value={searchTerm}
+              onChange={(e) => dispatch(setHeatmapSearchTerm(e.target.value))}
+              sx={{ fontSize: CONTROL_FONT }}
+              // Disable search if operator doesn't have access to current floor
+              disabled={currentUserRole === 'Operator' && selectedFloorId && !canAccessFloor(selectedFloorId)}
+            />
+            {/* Clear icon - only show when there's text */}
+            {searchTerm && (
+              <IconButton
+                size="small"
+                onClick={handleClearSearch}
+                sx={{
+                  p: { xs: '2px', sm: '4px', md: '6px' },
+                  position: 'absolute',
+                  right: 0,
+                  color: '#666',
+                  '&:hover': {
+                    color: '#333',
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                  },
+                }}
+              >
+                <ClearIcon fontSize={isMobile ? 'small' : 'medium'} />
+              </IconButton>
+            )}
+          </Paper>
+
+          {/* Display Mode Buttons */}
+          <Box
+            sx={{
+
+              backgroundColor: contentColor, // Use contentColor instead of hardcoded color
+
+              borderRadius: 0.5,
+              px: { xs: 0.3, sm: 0.5, md: 0.8, lg: 1 },
+              py: { xs: 0.1, sm: 0.2, md: 0.3, lg: 0.4 },
+              display: 'flex',
+              flexDirection: 'row',
+              gap: { xs: 0.1, sm: 0.2, md: 0.3, lg: 0.5 },
+              alignItems: 'center',
+              boxShadow: 1,
+              flexShrink: 0,
+            }}
+          >
+            {['Light', 'Occupancy', 'Energy'].map((mode) => (
+              <Button
+                key={mode}
+                size="small"
+                variant="contained"
+                disableElevation
+                onClick={() => handleDisplayModeChange(mode)}
+                sx={{
+                  backgroundColor: displayMode === mode ? '#fff' : '#232323',
+                  color: displayMode === mode ? '#232323' : '#fff',
+                  textTransform: 'none',
+                  borderRadius: '50%',
+                  height: CONTROL_HEIGHT,
+                  minWidth: { xs: 32, sm: 40, md: 50, lg: 58 },
+                  px: { xs: 0.4, sm: 0.6, md: 0.8, lg: 1.2 },
+                  fontWeight: 600,
+                  fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.75rem', lg: '0.8rem' },
+                  boxShadow: 'none',
+                  '&:hover': {
+                    backgroundColor: displayMode === mode ? '#f5f5f5' : '#444',
+                  },
+                }}
+              >
+                {mode}
+              </Button>
+            ))}
+          </Box>
+        </Box>
+
+
+        {/* Action Buttons */}
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          flexShrink: 0,
+          ml: { xs: 0.3, sm: 0.5, md: 0.8 },
+        }}>
+          {displayMode === 'Light' && canCreateAreaGroup() && (
+            <Button
+              size="small"
+              variant="contained"
+              disableElevation
+              onClick={() => navigate('/create-area-model')}
+              sx={{
+                backgroundColor: '#232323',
+                color: '#fff',
+                textTransform: 'none',
+                borderRadius: 1,
+                fontSize: CONTROL_FONT,
+                px: { xs: 0.8, sm: 1.1, md: 1.3, lg: 1.6 },
+                py: { xs: 0.35, sm: 0.5, md: 0.6, lg: 0.7 },
+                minWidth: { xs: 90, sm: 105, md: 115, lg: 125 },
+                height: CONTROL_HEIGHT,
+              }}
+            >
+              Create Area Group
+            </Button>
+          )}
+
+          {displayMode === 'Occupancy' && canModifyDeviceSettings() && (
+            <Button
+              size="small"
+              variant="contained"
+              disableElevation
+              onClick={() => setShowOccupancyModal(true)}
+              sx={{
+                backgroundColor: buttonColor,
+                color: '#fff',
+                textTransform: 'none',
+                borderRadius: 1,
+                fontSize: CONTROL_FONT,
+                px: { xs: 0.8, sm: 1.1, md: 1.3, lg: 1.6 },
+                py: { xs: 0.35, sm: 0.5, md: 0.6, lg: 0.7 },
+                minWidth: { xs: 90, sm: 105, md: 115, lg: 125 },
+                height: CONTROL_HEIGHT,
+                '&:hover': { backgroundColor: '#444' }
+              }}
+            >
+              Occupancy Settings
+            </Button>
+          )}
+        </Box>
+      </Box>
+
+      {/* Occupancy Modal */}
+      <GroupOccupancyModel
+        open={showOccupancyModal}
+        onClose={() => setShowOccupancyModal(false)}
+      />
+    </>
+  );
+};
+
+
+export default HeatmapControls;
+

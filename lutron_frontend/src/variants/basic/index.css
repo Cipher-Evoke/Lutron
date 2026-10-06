@@ -1,0 +1,1130 @@
+/* SweetAlert2 default z-index (~1060) sits below the app top bar (10002); keep alerts above chrome */
+.swal2-container {
+  z-index: 11000 !important;
+}
+
+/* Native checkboxes: grey border, blue accent where supported (non–light-theme / fallback) */
+input[type="checkbox"] {
+  accent-color: var(--app-checkbox-accent, auto);
+  border: 1px solid var(--app-checkbox-border, transparent);
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
+/*
+ * Default light theme: plain HTML checkboxes match app MUI style (white box, gray border, blue tick).
+ * Exclude MUI Checkbox / Switch — they use a hidden native input + SVG; reverting avoids breaking them.
+ */
+html.app-native-checkbox-light input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border: 1px solid #d1d1d1;
+  border-radius: 2px;
+  background-color: #ffffff;
+  cursor: pointer;
+  vertical-align: middle;
+  accent-color: transparent;
+}
+
+html.app-native-checkbox-light input[type="checkbox"]:checked {
+  background-color: #ffffff;
+  border-color: #1565c0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%231565C0' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round' d='M6.5 12.5l4 4 8-9'/%3E%3C/svg%3E");
+  background-size: 16px 16px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+html.app-native-checkbox-light input[type="checkbox"]:indeterminate {
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='5' y='10.5' width='14' height='3' rx='1.5' fill='%231565C0'/%3E%3C/svg%3E");
+  background-size: 16px 16px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+html.app-native-checkbox-light input[type="checkbox"]:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+html.app-native-checkbox-light input[type="checkbox"]:focus-visible {
+  outline: 2px solid #1565c0;
+  outline-offset: 2px;
+}
+
+/*
+ * Default light theme MUI Checkbox: hide SVG (filled primary icon) and show the
+ * same white-box + blue-tick native control used on Dashboard Alerts.
+ * Switch keeps a hidden native input — do not restyle it.
+ */
+html.app-native-checkbox-light .MuiCheckbox-root {
+  color: transparent;
+}
+
+html.app-native-checkbox-light .MuiCheckbox-root .MuiSvgIcon-root {
+  display: none !important;
+}
+
+html.app-native-checkbox-light .MuiCheckbox-root input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  left: auto !important;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid #d1d1d1 !important;
+  border-radius: 2px !important;
+  box-sizing: border-box !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  cursor: inherit !important;
+  z-index: 1 !important;
+  flex-shrink: 0;
+}
+
+html.app-native-checkbox-light .MuiCheckbox-root input[type="checkbox"]:checked {
+  border-color: #1565c0 !important;
+  background-color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%231565C0' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round' d='M6.5 12.5l4 4 8-9'/%3E%3C/svg%3E") !important;
+  background-size: 16px 16px !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+html.app-native-checkbox-light .MuiCheckbox-root input[type="checkbox"]:indeterminate {
+  border-color: #1565c0 !important;
+  background-color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='5' y='10.5' width='14' height='3' rx='1.5' fill='%231565C0'/%3E%3C/svg%3E") !important;
+  background-size: 16px 16px !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+html.app-native-checkbox-light .MuiCheckbox-root input[type="checkbox"]:disabled {
+  opacity: 1 !important;
+  cursor: default !important;
+}
+
+html.app-native-checkbox-light .MuiSwitch-root input[type="checkbox"] {
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+  background: transparent none !important;
+  background-image: none !important;
+  opacity: 0 !important;
+  position: absolute !important;
+  inset: 0 !important;
+  cursor: inherit !important;
+  z-index: 1 !important;
+}
+
+/*
+ * Default light theme: Select/Menu paper still used stale /theme/ content color
+ * (taupe) after Reset. Force white list + dark text to match the default theme.
+ */
+html.app-native-checkbox-light .MuiMenu-paper {
+  background-color: #ffffff !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+html.app-native-checkbox-light .MuiMenu-paper .MuiMenuItem-root {
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+html.app-native-checkbox-light .MuiMenu-paper .MuiMenuItem-root.Mui-selected {
+  background-color: rgba(21, 101, 192, 0.08) !important;
+}
+
+html.app-native-checkbox-light .MuiMenu-paper .MuiMenuItem-root:hover,
+html.app-native-checkbox-light .MuiMenu-paper .MuiMenuItem-root.Mui-focusVisible {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Global styles for better layout control */
+html, body, #root {
+  height: auto;
+  min-height: 100vh;
+  overflow-x: hidden; /* Prevent horizontal scroll only */
+  overflow-y: auto; /* Enable vertical scroll for entire page */
+  background-color: var(--app-background, #ffffff);
+  background-image: var(--app-background-image, none);
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* Dashboard routes size their own viewport (overview uses 100dvh); global min-height left empty app background below short tabs (e.g. Space Utilization). */
+html.dashboard-route-shell,
+html.dashboard-route-shell body,
+html.dashboard-route-shell #root {
+  min-height: 0;
+}
+
+/* Responsive breakpoints for better mobile/tablet support */
+@media (max-width: 1440px) {
+  html, body, #root {
+    overflow-y: auto; /* Ensure scrolling is enabled on smaller screens */
+  }
+  
+  /* Adjust padding for smaller screens */
+  .MuiContainer-root {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* Laptop size breakpoint for 1280x720 resolution */
+@media (min-width: 1280px) and (max-width: 1365px) {
+  html, body, #root {
+    overflow-y: auto;
+  }
+  
+  /* Adjust padding for laptop screens */
+  .MuiContainer-root {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  
+  /* Optimize container heights for laptop screens */
+  .lutron-website-container,
+  .help-container,
+  .schedule-container {
+    min-height: calc(100vh - 150px) !important;
+  }
+
+  .area-group-container {
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+  }
+  
+  /* Ensure tables and lists are scrollable */
+  .MuiTableContainer-root,
+  .MuiList-root {
+    overflow-x: auto;
+  }
+  
+  /* Touch-friendly buttons and inputs (exclude compact shade % fields) */
+  .MuiButton-root,
+  .MuiTextField-root:not(.heatmap-shade-level-input) input {
+    min-height: 42px;
+  }
+  
+  /* Heatmap adjustments for laptop — cap only; JS availableHeight sets exact fit */
+  .heatmap-container {
+    max-height: calc(100vh - 96px) !important;
+  }
+  
+  /* Area group list scrolls inside panel; do not force 100vh caps */
+  .area-group-scrollable {
+    max-height: none !important;
+  }
+}
+
+/* Laptop size breakpoint for 1280x720 resolution - specific adjustments */
+@media (min-width: 1280px) and (max-width: 1365px) and (max-height: 800px) {
+  /* Optimize for 1280x720 specifically */
+  .lutron-website-container,
+  .help-container,
+  .schedule-container {
+    min-height: calc(100vh - 140px) !important;
+  }
+
+  .area-group-container {
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+  }
+  
+  .heatmap-container {
+    max-height: calc(100vh - 88px) !important;
+  }
+  
+  .area-group-scrollable {
+    max-height: none !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  /* Tablet adjustments */
+  .lutron-website-container,
+  .help-container,
+  .schedule-container {
+    min-height: calc(100vh - 140px) !important;
+  }
+
+  .area-group-container {
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  html, body, #root {
+    overflow-y: auto; /* Ensure scrolling is enabled on mobile */
+  }
+  
+  /* Mobile adjustments */
+  .lutron-website-container,
+  .help-container,
+  .schedule-container {
+    min-height: calc(100vh - 120px) !important;
+  }
+
+  .area-group-container {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+  }
+  
+  /* Reduce padding on mobile */
+  .MuiContainer-root {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Small mobile adjustments */
+  .lutron-website-container,
+  .help-container,
+  .schedule-container {
+    min-height: calc(100vh - 100px) !important;
+  }
+
+  .area-group-container {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+  }
+}
+
+/* Utility classes for responsive design */
+.responsive-text {
+  font-size: clamp(0.875rem, 2.5vw, 1rem);
+}
+
+.responsive-padding {
+  padding: clamp(8px, 2vw, 24px);
+}
+
+.responsive-margin {
+  margin: clamp(4px, 1vw, 16px);
+}
+
+/* Ensure all content is accessible on smaller screens */
+@media (max-width: 1440px) {
+  /* Make sure tables and lists are scrollable horizontally if needed */
+  .MuiTableContainer-root,
+  .MuiList-root {
+    overflow-x: auto;
+  }
+  
+  /* Ensure buttons and inputs are touch-friendly (exclude compact shade % fields) */
+  .MuiButton-root,
+  .MuiTextField-root:not(.heatmap-shade-level-input) input {
+    min-height: 44px;
+  }
+}
+
+/* Heatmap: cap height so the bottom legend bar stays on-screen.
+   Measured `availableHeight` from JS sets the exact height (do not force a taller !important height). */
+.heatmap-container {
+  max-height: calc(100vh - 88px) !important;
+  overflow: hidden !important;
+}
+
+/* Area status sidebar: fill column height; no outer scroll (zones list scrolls). */
+.heatmap-container .heatmap-area-sidebar {
+  overflow: hidden !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+  overscroll-behavior: contain;
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0;
+}
+
+.heatmap-container .heatmap-area-sidebar-body {
+  flex: 1 1 0% !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+  padding-bottom: 8px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.heatmap-container .heatmap-area-sidebar-zones-list {
+  flex: 0 0 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: hidden !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+  /* Gap between value chips (0% / 4500K) and scrollbar / right edge */
+  padding-right: 8px !important;
+  box-sizing: border-box !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(30, 116, 197, 0.7) rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Shade % field — border on wrapper (native input; MUI outline was invisible) */
+.heatmap-container .heatmap-shade-level-wrap {
+  width: 64px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  box-sizing: border-box !important;
+  background-color: #ffffff !important;
+  border: 1.5px solid rgba(30, 116, 197, 0.65) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+  overflow: visible !important;
+}
+.heatmap-container .heatmap-shade-level-wrap:hover {
+  border-color: rgba(30, 116, 197, 0.9) !important;
+}
+.heatmap-container .heatmap-shade-level-wrap:focus-within {
+  border-color: #1e74c5 !important;
+  box-shadow: 0 0 0 2px rgba(30, 116, 197, 0.2) !important;
+}
+.heatmap-container .heatmap-shade-level-input {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  text-align: center !important;
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+  caret-color: #111111 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  padding: 0 4px !important;
+  box-sizing: border-box !important;
+}
+
+.heatmap-container .heatmap-area-sidebar-zones-list::-webkit-scrollbar {
+  width: 4px !important;
+  display: block !important;
+}
+
+.heatmap-container .heatmap-area-sidebar-zones-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.06) !important;
+  margin-block: 2px !important;
+}
+
+.heatmap-container .heatmap-area-sidebar-zones-list::-webkit-scrollbar-thumb {
+  background: rgba(30, 116, 197, 0.65) !important;
+  border-radius: 4px !important;
+  min-height: 24px !important;
+}
+
+/* Keep floorplan canvas from scrolling; never clip sidebar or bottom legend bar */
+@media (min-width: 1440px) {
+  .heatmap-container {
+    overflow: hidden !important;
+    max-height: calc(100vh - 88px) !important;
+  }
+
+  .heatmap-container > *:not(.heatmap-area-sidebar),
+  .heatmap-container > *:not(.heatmap-area-sidebar) * {
+    overflow: hidden !important;
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
+  }
+
+  .heatmap-container .heatmap-area-sidebar {
+    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+  }
+
+  .heatmap-container .heatmap-area-sidebar-zones-list {
+    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+  }
+
+  /* Legend / floor nav / Create Area Group must stay fully visible */
+  .heatmap-container .heatmap-legends-nav,
+  .heatmap-container .heatmap-legends-nav * {
+    overflow: visible !important;
+  }
+}
+
+.heatmap-legends-nav {
+  position: absolute !important;
+  bottom: 8px !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 10 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(4px) !important;
+  border-radius: 8px !important;
+  margin: 0 8px !important;
+  padding: 4px 8px !important;
+  overflow: visible !important;
+  min-height: 44px !important;
+  box-sizing: border-box !important;
+}
+
+/* Area group pages specific styles — fill MainLayout content panel (do NOT use 100vh;
+   panel is shorter, e.g. calc(100dvh - 260px) with overflow:hidden, which clipped actions). */
+.area-group-container {
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Responsive: keep filling the parent panel (no 100vh) */
+@media (max-width: 1440px) {
+  .area-group-container {
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1365px) {
+  .area-group-container {
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .area-group-container {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+}
+
+.area-group-scrollable {
+  max-height: none !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+
+/* Prevent page-level scroll bleed on area group chrome; list scrolls via .area-group-scrollable */
+.area-group-container * {
+  overflow: hidden !important;
+  overflow-y: hidden !important;
+  overflow-x: hidden !important;
+}
+
+.area-group-container .area-group-scrollable {
+  overflow: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Keep Copy / Modify / Delete / Close (and Save / Cancel) visible */
+.area-group-container .area-group-actions {
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 2 !important;
+  background-color: #ffffff !important;
+  padding-top: 8px !important;
+  padding-bottom: 28px !important;
+  pointer-events: auto !important;
+}
+
+.area-group-container .area-group-actions * {
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Settings layout — sidebar stays put, content pane scrolls (advanced/customized pattern). */
+.settings-layout-root {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.settings-main-inner-panel {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+@media (min-width: 900px) {
+  .settings-layout-root,
+  .MuiGrid-container.settings-layout-root,
+  .MuiGrid-container:has(> .MuiGrid-item .settings-sidebar-nav-track) {
+    align-items: flex-start !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    min-height: 0 !important;
+  }
+
+  .settings-layout-root [data-testid="settings-sidebar-nav"],
+  .MuiGrid-container:has(> .MuiGrid-item .settings-sidebar-nav-track)
+    > .MuiGrid-item:has(.settings-sidebar-nav-track) {
+    position: sticky !important;
+    top: 20px !important;
+    align-self: flex-start !important;
+    max-height: none !important;
+    overflow: visible !important;
+    z-index: 2;
+  }
+
+  .settings-layout-root > .settings-main-outer-panel {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Maintenance: do not stretch the content pane to sidebar height. */
+  .settings-layout-root:has(.basic-maintenance-page) > .settings-main-outer-panel {
+    align-self: flex-start !important;
+    height: auto !important;
+  }
+
+  .settings-main-inner-panel,
+  .settings-main-content-column,
+  .settings-home-content-column {
+    max-height: calc(100dvh - 360px) !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .settings-container.settings-home-page .settings-home-content-column {
+    padding-bottom: 12px !important;
+  }
+}
+
+@media (max-width: 899px) {
+  .settings-main-inner-panel,
+  .settings-main-content-column,
+  .settings-home-content-column {
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+}
+
+/* Avoid a second scrollbar inside Home Lutron/Client/Project cards. */
+.settings-main-inner-panel .lutron-content-scrollable,
+.settings-main-inner-panel .client-content-scrollable,
+.settings-main-inner-panel .project-content-scrollable,
+.settings-home-page .lutron-content-scrollable,
+.settings-home-page .client-content-scrollable,
+.settings-home-page .project-content-scrollable {
+  overflow: visible !important;
+  overflow-y: visible !important;
+  max-height: none !important;
+  height: auto !important;
+  box-sizing: border-box !important;
+}
+
+/*
+ * Basic Settings → Home: Lutron/Client/Project tabs stay visible;
+ * only the content column scrolls (no page + inner double bar).
+ */
+html:has(.settings-home-page),
+html:has(.settings-home-page) body,
+html:has(.settings-home-page) #root {
+  overflow: hidden !important;
+}
+
+.settings-container.settings-home-page {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+}
+
+.settings-container.settings-home-page .settings-main-inner-panel {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  max-height: calc(100dvh - 360px) !important;
+  min-height: 0 !important;
+}
+
+.settings-container.settings-home-page .settings-home-content-column {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
+  padding-bottom: 12px !important;
+  box-sizing: border-box !important;
+}
+
+.settings-container.settings-home-page .home-content-type-tabs {
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  flex-shrink: 0 !important;
+}
+
+/* Lutron / Client / Project dialogue box — colored shell shows full border (incl. bottom). */
+.settings-container.settings-home-page .settings-home-panel-shell {
+  box-sizing: border-box !important;
+  padding: 2px !important;
+  border-radius: 12px !important;
+  background-color: var(--settings-home-panel-border-color, #1565C0) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  flex-shrink: 0 !important;
+  margin-bottom: 8px !important;
+  overflow: visible !important;
+}
+
+.settings-container.settings-home-page .settings-home-panel {
+  box-sizing: border-box !important;
+  background-color: #fff !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 10px !important;
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+.settings-container {
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  min-height: 0 !important;
+}
+
+/* Responsive adjustments for settings containers */
+@media (max-width: 1440px) {
+  .settings-container {
+    min-height: 0 !important;
+  }
+}
+
+/* Laptop size (1280x720) adjustments for settings containers */
+@media (min-width: 1280px) and (max-width: 1365px) {
+  .settings-container {
+    min-height: 0 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .settings-container {
+    min-height: 0 !important;
+  }
+}
+
+.lutron-website-container {
+  min-height: calc(100vh - 200px) !important;
+  max-height: calc(100vh - 200px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  height: calc(100vh - 200px) !important;
+}
+
+.lutron-home-hero {
+  min-height: 42vh !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Responsive adjustments for lutron website containers */
+@media (max-width: 1440px) {
+  .lutron-website-container {
+    min-height: calc(100vh - 180px) !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+}
+
+/* Laptop size (1280x720) adjustments for lutron website containers */
+@media (min-width: 1280px) and (max-width: 1365px) {
+  .lutron-website-container {
+    min-height: calc(100vh - 170px) !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .lutron-website-container {
+    min-height: calc(100vh - 160px) !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+}
+
+.help-container {
+  min-height: calc(100vh - 180px) !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: visible !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+}
+
+/* Responsive adjustments for help containers */
+@media (max-width: 1440px) {
+  .help-container {
+    min-height: calc(100vh - 160px) !important;
+    overflow: visible !important;
+  }
+}
+
+/* Laptop size (1280x720) adjustments for help containers */
+@media (min-width: 1280px) and (max-width: 1365px) {
+  .help-container {
+    min-height: calc(100vh - 150px) !important;
+    overflow: visible !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .help-container {
+    min-height: calc(100vh - 140px) !important;
+    overflow: visible !important;
+  }
+}
+
+/* Allow natural scrolling for child elements — except settings scroll columns */
+.settings-container *:not(.settings-layout-root):not(.settings-main-inner-panel):not(.settings-main-content-column):not(.settings-home-content-column):not(.home-content-type-tabs),
+.lutron-website-container *,
+.help-container *:not(.settings-main-inner-panel) {
+  overflow: visible !important;
+}
+
+/* Allow natural scrolling on lutron website pages */
+.help-container {
+  overflow: visible !important;
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
+}
+
+/* Settings Home tab panels — no nested scroll; parent column scrolls once */
+.project-content-scrollable,
+.client-content-scrollable,
+.lutron-content-scrollable {
+  overflow: visible !important;
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* Laptop size (1280x720) - allow scrolling for content areas */
+@media (min-width: 1280px) and (max-width: 1365px) {
+  .project-content-scrollable,
+  .client-content-scrollable,
+  .lutron-content-scrollable {
+    overflow: auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    max-height: calc(100vh - 250px) !important;
+  }
+
+  .settings-home-page .project-content-scrollable,
+  .settings-home-page .client-content-scrollable,
+  .settings-home-page .lutron-content-scrollable {
+    overflow: visible !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+  
+  .settings-container {
+    min-height: 0 !important;
+  }
+  
+  html, body, #root {
+    overflow-y: auto !important;
+  }
+
+  html:has(.settings-home-page),
+  html:has(.settings-home-page) body,
+  html:has(.settings-home-page) #root {
+    overflow: hidden !important;
+  }
+}
+
+/* For screens below 1440px, disable internal scroll and use main container scroll */
+@media (max-width: 1439px) {
+  .project-content-scrollable,
+  .client-content-scrollable,
+  .lutron-content-scrollable {
+    overflow: visible !important;
+    overflow-y: visible !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  
+  /* Keep settings shell height-capped; content column scrolls (see min-width 900px rules). */
+  .settings-container {
+    min-height: 0 !important;
+  }
+  
+}
+
+.settings-container *:not(.project-content-scrollable):not(.client-content-scrollable):not(.lutron-content-scrollable):not(.settings-layout-root):not(.settings-main-inner-panel):not(.settings-main-content-column):not(.settings-home-content-column):not(.home-content-type-tabs):not(.settings-home-panel-shell),
+.help-container *:not(.project-content-scrollable):not(.client-content-scrollable):not(.lutron-content-scrollable):not(.settings-main-inner-panel) {
+  overflow: visible !important;
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
+}
+
+/* Settings Home Description — match reference gray Quill block (toolbar + editor) */
+.settings-container .settings-home-quill .ql-toolbar.ql-snow {
+  background-color: #eee !important;
+  border: none !important;
+  border-bottom: 1px solid #d8d8d8 !important;
+}
+.settings-container .settings-home-quill .ql-container.ql-snow {
+  background-color: #eee !important;
+  border: none !important;
+}
+.settings-container .settings-home-quill .ql-editor {
+  background-color: #eee !important;
+}
+/* Keep picker menus collapsed — prevents stray arrow icons in the toolbar row */
+.settings-container .settings-home-quill .ql-toolbar.ql-snow .ql-picker-options {
+  display: none !important;
+}
+.settings-container .settings-home-quill .ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options {
+  display: block !important;
+}
+.settings-container .settings-home-quill .ql-toolbar.ql-snow .ql-picker {
+  position: relative !important;
+}
+.settings-container .settings-home-quill .ql-toolbar.ql-snow .ql-picker-options {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+}
+
+/* Word-style numeric labels in font-size picker (basic Settings Home only). */
+@import '../../shared/settings/home/homeQuillFontSize.css';
+
+/* Ensure settings pages align properly with footer like other pages */
+.settings-container,
+.help-container {
+  position: relative !important;
+  box-sizing: border-box !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+/* Help page cards — avoid MUI Collapse height clipping on multi-row download actions */
+.help-container .help-card,
+.help-container .help-card-details,
+.help-container .help-download-actions {
+  overflow: visible !important;
+}
+
+.help-container .help-download-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
+  width: 100% !important;
+  padding-bottom: 6px !important;
+}
+
+.help-container .help-download-actions .MuiButton-root {
+  flex-shrink: 0 !important;
+}
+
+/* Public /get-help page — natural height; do not cap like settings panel */
+.help-get-help-page,
+.help-get-help-page .help-cards-list,
+.help-get-help-page .help-card,
+.help-get-help-page .help-card-details,
+.help-get-help-page .help-download-actions {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Specific styles for Lutron page - NO scrolling for 1440px+ screens */
+body.lutron-page {
+  overflow: hidden !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+}
+
+#root.lutron-page {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+}
+
+/* For screens below 1440px ONLY, allow scrolling */
+@media (max-width: 1439px) {
+  body.lutron-page {
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+  }
+  
+  #root.lutron-page {
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+  }
+  
+  /* Ensure Lutron website container allows scrolling on smaller screens */
+  .lutron-website-container {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
+/* For screens 1440px and above, ensure NO scrolling */
+@media (min-width: 1440px) {
+  body.lutron-page {
+    overflow: hidden !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
+  
+  #root.lutron-page {
+    overflow: hidden !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
+  
+  /* Ensure Lutron website container has fixed height on larger screens */
+  .lutron-website-container {
+    height: calc(100vh - 234px) !important;
+    max-height: calc(100vh - 234px) !important;
+    overflow: hidden !important;
+  }
+  
+  /* Ensure heatmap page has no scroll on large screens */
+  body:has(.heatmap-container) {
+    overflow: hidden !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
+  
+  #root:has(.heatmap-container) {
+    overflow: hidden !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
+}
+
+/* Specific styles for Schedule page to prevent scrollbars */
+body.schedule-page {
+  overflow: hidden !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+}
+
+#root.schedule-page {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+}
+
+.schedule-container {
+  min-height: calc(100vh - 180px) !important;
+  max-height: none !important;
+  overflow: visible !important;
+  width: 100% !important;
+}
+
+/* Responsive adjustments for schedule containers */
+@media (max-width: 1440px) {
+  .schedule-container {
+    min-height: calc(100vh - 160px) !important;
+    overflow: visible !important;
+  }
+}
+
+/* Laptop size (1280x720) adjustments for schedule containers */
+@media (min-width: 1280px) and (max-width: 1365px) {
+  .schedule-container {
+    min-height: calc(100vh - 150px) !important;
+    overflow: visible !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .schedule-container {
+    min-height: calc(100vh - 140px) !important;
+    overflow: visible !important;
+  }
+}
+
