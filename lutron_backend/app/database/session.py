@@ -28,6 +28,18 @@ if DATABASE_URL.startswith("postgres://"):
 # Render installs use psycopg2 regardless of SQLAlchemy version.
 if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
+# Log (password-masked) which DB host the engine will use, so a wrong URL
+# (e.g. localhost copied from a local environment.env) is obvious in Render logs.
+try:
+    from sqlalchemy.engine import make_url as _make_url
+
+    _parsed = _make_url(DATABASE_URL)
+    print(
+        f"[DB] engine target host={_parsed.host} port={_parsed.port} "
+        f"db={_parsed.database} driver={_parsed.drivername}"
+    )
+except Exception as _e:
+    print(f"[DB] could not parse DATABASE_URL ({_e})")
 
 
 def _env_int(name: str, default: int) -> int:

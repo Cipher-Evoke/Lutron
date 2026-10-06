@@ -9,7 +9,7 @@ export function getApiMediaBase() {
 
 /** @deprecated use getApiMediaBase() — kept for callers that read a constant at load time */
 export const API_MEDIA_BASE = (
-  process.env.REACT_APP_API_URL || "http://localhost:8000"
+  process.env.REACT_APP_API_URL || "https://lutron.onrender.com"
 ).replace(/\/$/, "");
 
 /**

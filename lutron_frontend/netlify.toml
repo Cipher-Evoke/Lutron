@@ -1,25 +1,20 @@
-# Netlify config for Lutron frontend (CRA + CRACO)
-# Deploy via: Netlify Dashboard -> Add new site -> Import from Git.
-# IMPORTANT: in the Netlify UI leave "Base directory" EMPTY. This file is the
-# single source of truth (a UI base + a file base conflict breaks config parsing
-# with "Base directory does not exist"). If the UI already has build settings
-# filled in, clear them (or set them to exactly the values below).
+# Netlify config for standalone frontend repo.
+# This file lives at the REPO ROOT (repo root == lutron_frontend), so there is
+# intentionally no `base` setting. In the Netlify UI leave "Base directory" EMPTY.
 # REQUIRED env var in Netlify UI (Site settings -> Environment variables):
 #   REACT_APP_API_URL=https://<your-render-backend>.onrender.com
 #   (no trailing slash; must be set BEFORE build, then Trigger deploy -> Clear cache and deploy)
 
 [build]
-  # No `base` on purpose — repo root is the base; the command below builds
-  # inside lutron_frontend/ and `publish` is relative to the repo root.
-  publish = "lutron_frontend/build"
-  command = "npm --prefix lutron_frontend install --no-audit --no-fund && npm --prefix lutron_frontend run build"
+  publish = "build"
+  command = "npm run build"
 
 [build.environment]
   NODE_VERSION = "18"
   NPM_FLAGS = "--no-audit --no-fund"
   # CRA bakes REACT_APP_* at build time. Fallback is only for preview builds
   # without the env var set — set the real value in the Netlify UI.
-  REACT_APP_API_URL = "http://127.0.0.1:8000"
+  REACT_APP_API_URL = "https://lutron.onrender.com"
   GENERATE_SOURCEMAP = "false"
   DISABLE_ESLINT_PLUGIN = "true"
   ESLINT_NO_DEV_ERRORS = "true"
@@ -38,7 +33,7 @@
   [headers.values]
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "SAMEORIGIN"
-    Referrer-Policy = "no-referrer"
+    Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
     X-Permitted-Cross-Domain-Policies = "none"
     Cross-Origin-Opener-Policy = "same-origin"

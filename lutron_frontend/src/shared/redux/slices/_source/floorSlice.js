@@ -351,7 +351,7 @@ const floorSlice = createSlice({
 
         // Log the payload to see the structure
 
-        const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+        const API_URL = process.env.REACT_APP_API_URL || "https://lutron.onrender.com";
         const rawPath = action.payload.floor_image || action.payload.floor_plan || "";
         if (rawPath) {
           const base = rawPath.startsWith("http") ? rawPath : `${API_URL}${rawPath}`;
@@ -414,7 +414,7 @@ const floorSlice = createSlice({
         }
 
         // also refresh preview url with cache-busting token
-        const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+        const API_URL = process.env.REACT_APP_API_URL || "https://lutron.onrender.com";
         const rawUpd = updatedFloor.floor_image || updatedFloor.floor_plan || "";
         if (rawUpd) {
           const base = rawUpd.startsWith("http") ? rawUpd : `${API_URL}${rawUpd}`;

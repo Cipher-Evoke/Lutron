@@ -24,13 +24,18 @@ load_dotenv(Path(__file__).resolve().parents[1] / "environment.env", override=Fa
 
 
 def parse_cors_allowed_origins(raw: str | None) -> list[str]:
-    """Split a comma-separated CORS origin list; drop empties; preserve order."""
+    """Split a comma-separated CORS origin list; drop empties; preserve order.
+
+    Trailing slashes are stripped: browsers send ``Origin`` without a path
+    (``https://site.netlify.app``), so a pasted value with a trailing slash
+    would otherwise never match and CORS would silently fail.
+    """
     if raw is None:
         return []
     origins: list[str] = []
     seen: set[str] = set()
     for part in raw.split(","):
-        origin = part.strip().strip('"').strip("'").strip()
+        origin = part.strip().strip('"').strip("'").strip().rstrip("/")
         if not origin or origin in seen:
             continue
         seen.add(origin)

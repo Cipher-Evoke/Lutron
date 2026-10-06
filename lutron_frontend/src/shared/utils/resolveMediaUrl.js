@@ -35,24 +35,40 @@ export function resolvePublicAssetUrl(path) {
 
 /**
  * API origin for fetch/WebSocket that cannot use same-origin proxy.
- * Always follows the page hostname (LAN IP / custom host / 127.0.0.1).
+ * - Split cloud deploy (Netlify UI + Render API): the baked URL points at a
+ *   real backend host — use it exactly.
+ * - Plain-HTTP LAN / packaged installs: follow the page hostname
+ *   (LAN IP / custom host / 127.0.0.1) at the baked port.
  */
 export function resolveApiOrigin() {
+  const raw = (process.env.REACT_APP_API_URL || "https://lutron.onrender.com").replace(/\/+$/, '');
   if (typeof window !== "undefined" && window.location?.hostname) {
-    const proto = window.location.protocol || "http:";
-    let port = "8000";
     try {
-      const baked = process.env.REACT_APP_API_URL;
-      if (baked) {
-        const u = new URL(baked);
-        if (u.port) port = u.port;
+      const bakedHost = (new URL(raw).hostname || "").toLowerCase();
+      const isLoopback =
+        bakedHost === "" ||
+        bakedHost === "localhost" ||
+        bakedHost === "127.0.0.1" ||
+        bakedHost === "::1";
+      if (!isLoopback) return raw;
+      // HTTPS page = hosted UI: never graft ":8000" onto it.
+      if ((window.location.protocol || "http:") === "https:") return raw;
+      let port = "8000";
+      try {
+        const baked = process.env.REACT_APP_API_URL;
+        if (baked) {
+          const u = new URL(baked);
+          if (u.port) port = u.port;
+        }
+      } catch {
+        /* keep 8000 */
       }
+      return `${window.location.protocol || "http:"}//${window.location.hostname}:${port}`;
     } catch {
-      /* keep 8000 */
+      return raw;
     }
-    return `${proto}//${window.location.hostname}:${port}`;
   }
-  return process.env.REACT_APP_API_URL || "http://localhost:8000";
+  return raw;
 }
 
 /**

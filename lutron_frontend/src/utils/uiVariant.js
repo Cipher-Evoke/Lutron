@@ -59,12 +59,27 @@ export function writeUiVariantLockedLocal(locked) {
 
 function getApiBaseUrl(options = {}) {
   if (options.apiUrl) return String(options.apiUrl).replace(/\/+$/, '');
+  const raw = String(process.env.REACT_APP_API_URL || 'https://lutron.onrender.com').replace(/\/+$/, '');
   if (typeof window !== 'undefined' && window.location?.hostname) {
-    const proto = window.location.protocol || 'http:';
-    return `${proto}//${window.location.hostname}:8000`;
+    try {
+      const bakedHost = (new URL(raw).hostname || '').toLowerCase();
+      const isLoopback =
+        bakedHost === '' ||
+        bakedHost === 'localhost' ||
+        bakedHost === '127.0.0.1' ||
+        bakedHost === '::1';
+      // Split cloud deploy: baked URL points at a real backend host — use it.
+      if (!isLoopback) return raw;
+      // HTTPS page = hosted UI: never graft ":8000" onto it.
+      if ((window.location.protocol || 'http:') === 'https:') return raw;
+      // Plain-HTTP LAN install: API lives on the page host at the baked port.
+      const port = (() => { try { return new URL(raw).port || '8000'; } catch { return '8000'; } })();
+      return `${window.location.protocol || 'http:'}//${window.location.hostname}:${port}`;
+    } catch {
+      return raw;
+    }
   }
-  const raw = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-  return String(raw).replace(/\/+$/, '');
+  return raw;
 }
 
 function getAuthToken(options = {}) {

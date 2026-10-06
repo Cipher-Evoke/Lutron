@@ -9,29 +9,40 @@ import {
   clearAuthRedirectFlag,
 } from "../../utils/authRedirectGuard";
 
-const DEFAULT_API = "http://localhost:8000";
+const DEFAULT_API = "https://lutron.onrender.com";
 
 /**
- * Point API at the same host the UI was opened with (port 8000).
- * Fixes domain/IP change: http://lumyn:3000 or http://192.168.x.x:3000
- * must call http://<same-host>:8000 — not a baked localhost-only URL.
+ * API origin resolution.
+ * - Split cloud deploy (Netlify UI + Render API): REACT_APP_API_URL points at a
+ *   real backend host — use it exactly.
+ * - Same-host LAN / packaged install over plain HTTP (http://lumyn:3000 or
+ *   http://192.168.x.x:3000): call http://<same-host>:8000, not a baked
+ *   localhost-only URL.
  */
 function resolveApiBaseUrl() {
-  const raw = process.env.REACT_APP_API_URL || DEFAULT_API;
+  const raw = (process.env.REACT_APP_API_URL || DEFAULT_API).replace(/\/+$/, '');
   if (typeof window === "undefined" || !window.location?.hostname) {
     return raw;
   }
   try {
     const pageHost = window.location.hostname;
     const pageProto = window.location.protocol || "http:";
-    let apiPort = "8000";
-    try {
-      const u = new URL(raw);
-      if (u.port) apiPort = u.port;
-    } catch {
-      /* keep 8000 */
+    const u = new URL(raw);
+    const bakedHost = (u.hostname || "").toLowerCase();
+    const isLoopback =
+      bakedHost === "" ||
+      bakedHost === "localhost" ||
+      bakedHost === "127.0.0.1" ||
+      bakedHost === "::1";
+    if (!isLoopback) {
+      return raw;
     }
-    return `${pageProto}//${pageHost}:${apiPort}`;
+    // HTTPS page = hosted UI (Netlify). Grafting ":8000" onto it can never work;
+    // the build must bake REACT_APP_API_URL.
+    if (pageProto === "https:") {
+      return raw;
+    }
+    return `${pageProto}//${pageHost}:${u.port || "8000"}`;
   } catch {
     return raw;
   }

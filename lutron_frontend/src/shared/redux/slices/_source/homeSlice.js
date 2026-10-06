@@ -127,7 +127,7 @@ export const homeSlice = createSlice({
                 state.loading = false
                 state.homeData = action.payload
 
-                const API_URL = process.env.REACT_APP_API_URL || "";
+                const API_URL = process.env.REACT_APP_API_URL || "https://lutron.onrender.com";
                 const rawPath = action.payload.floor_image || action.payload.floor_image || "";
                 state.pdfUrl = rawPath.startsWith("http") ? rawPath : `${API_URL}${rawPath}`;
             })
@@ -144,7 +144,7 @@ export const homeSlice = createSlice({
                 state.loading = false
                 state.homeClient = action.payload
 
-                const API_URL = process.env.REACT_APP_API_URL || "";
+                const API_URL = process.env.REACT_APP_API_URL || "https://lutron.onrender.com";
                 const rawPath = action.payload.floor_image || action.payload.floor_image || "";
                 state.pdfUrl = rawPath.startsWith("http") ? rawPath : `${API_URL}${rawPath}`;
             })

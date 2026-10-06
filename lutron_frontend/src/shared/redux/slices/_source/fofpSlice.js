@@ -27,7 +27,7 @@ const formatFofpApiError = (err, fallback) => {
     msg.includes("ERR_CONNECTION_REFUSED") ||
     msg.includes("ECONNREFUSED")
   ) {
-    const base = process.env.REACT_APP_API_URL || "http://localhost:8000";
+    const base = process.env.REACT_APP_API_URL || "https://lutron.onrender.com";
     return `Cannot reach the API at ${base}. Start the backend server and click Retry.`;
   }
   if (msg === "Redirect in progress" || msg.includes("authentication token")) {

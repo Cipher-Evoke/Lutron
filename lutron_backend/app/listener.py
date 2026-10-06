@@ -40,7 +40,9 @@ from app.models.occupancy_logs import OccupancyLog
 from datetime import timedelta, datetime, timezone
 from sqlalchemy.sql import func
 
-events.Base.metadata.create_all(bind=engine)
+# NOTE: tables are created in app.main.on_startup (Base.metadata.create_all).
+# Do NOT call create_all here — import-time DDL would crash the API process
+# before startup if the DB is unreachable (e.g. Render cold start / wrong URL).
 shutdown_event = asyncio.Event()
 CRLF = b"\r\n"
 

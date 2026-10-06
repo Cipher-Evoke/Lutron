@@ -342,6 +342,7 @@ else:
 # -------------------- CORS Setup -------------------- #
 # LMS-007: explicit SPA origins only. Empty / missing list aborts startup.
 _cors_allowed_origins = require_cors_allowed_origins()
+print(f"[CORS] allowed origins: {', '.join(_cors_allowed_origins)}")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_allowed_origins,

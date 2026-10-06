@@ -2,7 +2,7 @@ import axios from "axios";
 import { getToken, getValidToken } from "./redux/slice/auth/userlogin";
 
 export const BaseUrl = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000",
+  baseURL: process.env.REACT_APP_API_URL || "https://lutron.onrender.com",
 });
 
 // Track redirect state to prevent multiple redirects
